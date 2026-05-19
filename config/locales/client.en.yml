@@ -10,6 +10,11 @@ en:
       nominate_button_title: "Nominate this member for one of the peer-awarded badges"
       nominate_button_self: "Suggest a badge for your profile"
       nominate_button_title_self: "Suggest a badge to identify yourself with — an admin will review"
+      topic_footer:
+        label: "Nominate for a badge"
+        title: "Nominate this topic's author for one of the peer-awarded badges"
+        label_self: "Suggest a badge for your profile"
+        title_self: "Suggest a badge to identify yourself with — an admin will review"
       modal:
         title: "Nominate %{username} for a badge"
         title_self: "Suggest you are identified with a badge"
