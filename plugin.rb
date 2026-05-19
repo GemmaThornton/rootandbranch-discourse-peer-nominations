@@ -40,9 +40,13 @@ after_initialize do
   load File.expand_path("../lib/peer_nominations/nomination_creator.rb", __FILE__)
   load File.expand_path("../lib/peer_nominations/approval_handler.rb", __FILE__)
 
-  # Register the "nominatable" custom field on Badge so admins can mark
-  # individual badges as nominatable without changing schema.
-  Badge.register_custom_field_type(PeerNominations::NOMINATABLE_FIELD, :boolean)
+  # NOTE: Badge does not implement HasCustomFields.register_custom_field_type
+  # the way Topic / Post / Category / User do — calling it raises NoMethodError
+  # at plugin activation (caught on staging during the first deploy attempt).
+  # Badges still support custom_fields via the BadgeCustomField table, so we
+  # read/write `badge.custom_fields["nominatable"]` directly. The value comes
+  # back as the string "true" rather than a Boolean, which the rest of the
+  # plugin already accounts for (`.to_s == "true"` checks).
 
   # Topic custom field registration.
   %w[peer_nom_nominator_id peer_nom_nominee_id peer_nom_badge_id].each do |field|
