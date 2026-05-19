@@ -30,7 +30,7 @@ en:
         submitting: "Submitting…"
         cancel: "Cancel"
         success_title: "Nomination submitted"
-        success_body: "Thanks — the admins will review your nomination and let you know once it's been approved. (If it's not approved, you won't hear anything.)"
+        success_body: "Thanks — the admins will review your nomination and let you know once it's been approved."
         success_close: "Close"
       admin_panel:
         title: "Nomination decision"
