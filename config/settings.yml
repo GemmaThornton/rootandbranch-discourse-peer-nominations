@@ -1,0 +1,32 @@
+plugins:
+  peer_nominations_enabled:
+    default: false
+    client: true
+
+  peer_nominations_category_id:
+    default: ""
+    client: true
+
+  peer_nominations_min_trust_level:
+    default: 1
+    min: 0
+    max: 4
+    client: true
+
+  peer_nominations_rate_limit_count:
+    default: 3
+    min: 1
+
+  peer_nominations_rate_limit_window_days:
+    default: 7
+    min: 1
+
+  peer_nominations_min_reason_length:
+    default: 50
+    min: 1
+    client: true
+
+  peer_nominations_max_reason_length:
+    default: 1000
+    min: 1
+    client: true

@@ -1,0 +1,47 @@
+en:
+  admin_js:
+    admin:
+      site_settings:
+        categories:
+          peer_nominations: "Peer Nominations"
+  js:
+    peer_nominations:
+      nominate_button: "Nominate for a badge"
+      nominate_button_title: "Nominate this member for one of the peer-awarded badges"
+      modal:
+        title: "Nominate %{username} for a badge"
+        intro: "Choose a badge and explain why %{username} deserves it. Your nomination will be sent to the admins for review."
+        badge_label: "Which badge?"
+        badge_placeholder: "— pick a badge —"
+        badge_description_prefix: "What it's for:"
+        reason_label: "Why do they deserve it?"
+        reason_placeholder: "Tell the admins what %{username} did to deserve this badge. The more specific you can be, the better — names, dates, links if useful."
+        reason_counter:
+          too_short: "%{count} of %{min} characters minimum"
+          ok: "%{count} characters"
+          too_long: "%{count} of %{max} characters maximum"
+        submit: "Submit nomination"
+        submitting: "Submitting…"
+        cancel: "Cancel"
+        success_title: "Nomination submitted"
+        success_body: "Thanks — the admins will review your nomination and let you know once it's been approved. (If it's not approved, you won't hear anything.)"
+        success_close: "Close"
+      admin_panel:
+        title: "Nomination decision"
+        state_under_review: "Under review"
+        state_approved: "Approved on %{date}"
+        state_declined: "Declined on %{date}"
+        approve_button: "Approve and grant badge"
+        approve_button_busy: "Granting…"
+        decline_button: "Decline"
+        decline_modal_title: "Decline this nomination"
+        decline_modal_intro: "The nominator will not be told. The reason below is for the admin record only."
+        decline_reason_label: "Reason (for the record)"
+        decline_reason_placeholder: "e.g. doesn't yet meet the criteria; member is inactive; duplicate of an earlier nomination"
+        decline_confirm: "Decline nomination"
+        decline_confirm_busy: "Declining…"
+        decline_cancel: "Cancel"
+        approved_toast: "Badge granted. Both members have been sent a PM."
+        declined_toast: "Nomination declined. Topic closed."
+      errors:
+        generic: "Something went wrong. Please try again."

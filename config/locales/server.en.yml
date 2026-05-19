@@ -1,0 +1,68 @@
+en:
+  peer_nominations:
+    errors:
+      disabled: "Peer nominations are not enabled on this forum."
+      not_configured: "Peer nominations have not been configured by an admin yet. Please ask an admin to set the nominations category."
+      trust_level: "You need to be a more established member before you can nominate others. Please post a few times and come back."
+      self_nominate: "You cannot nominate yourself for a badge."
+      badge_not_found: "That badge does not exist or is not open for nominations."
+      badge_not_nominatable: "That badge is not open for peer nominations."
+      reason_too_short: "Please write at least %{min} characters explaining why this member deserves this badge."
+      reason_too_long: "Please keep your nomination under %{max} characters."
+      already_approved: "You have already successfully nominated this member for this badge."
+      rate_limited: "You can nominate up to %{count} members in any %{days}-day period. Please wait before nominating again."
+      topic_not_a_nomination: "That topic is not a peer nomination."
+      not_admin: "Only admins can approve or decline nominations."
+      already_resolved: "This nomination has already been approved or declined."
+      grant_failed: "The badge could not be granted. Please check the badge configuration and try again."
+      decline_reason_too_long: "Please keep the decline note under 500 characters."
+
+    topic:
+      title: "%{nominator} nominates %{nominee} for %{badge}"
+      body: |
+        **%{nominator}** has nominated **%{nominee}** for the **%{badge}** badge.
+
+        %{nominator}'s reason:
+
+        > %{reason}
+
+        ---
+
+        *Admins: approve to grant the badge and notify both members. Decline to close this nomination silently — the nominator will not be told.*
+
+    pm:
+      nominee:
+        title: "You've been awarded the %{badge} badge"
+        raw: |
+          Hi %{nominee_name},
+
+          **%{nominator_name}** nominated you for the **%{badge}** badge, and an admin has approved it. Congratulations!
+
+          Here's what %{nominator_name} said about you:
+
+          > %{reason}
+
+          Your new badge will appear on your profile shortly.
+
+          Thanks for everything you do.
+
+          — The Root & Branch admins
+      nominator:
+        title: "Your nomination for %{nominee} was approved"
+        raw: |
+          Hi %{nominator_name},
+
+          Good news — an admin has approved your nomination of **%{nominee_name}** for the **%{badge}** badge. The badge is now showing on their profile.
+
+          Thanks for taking the time to recognise a comrade.
+
+          — The Root & Branch admins
+
+  site_settings:
+    peer_nominations_enabled: "Enable the peer nominations system"
+    peer_nominations_category_id: "Category ID where nomination topics are created. Must be restricted to admins/moderators."
+    peer_nominations_min_trust_level: "Minimum trust level required to submit a nomination"
+    peer_nominations_rate_limit_count: "Maximum number of nominations a member can submit within the rate-limit window"
+    peer_nominations_rate_limit_window_days: "Rate-limit window in days"
+    peer_nominations_min_reason_length: "Minimum number of characters required in a nomination reason"
+    peer_nominations_max_reason_length: "Maximum number of characters allowed in a nomination reason"

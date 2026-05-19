@@ -1,0 +1,113 @@
+/* Peer Nominations plugin styles */
+
+.peer-nominate-btn {
+  margin-top: 0.5em;
+}
+
+.peer-nominate-modal {
+  .peer-nominate-intro {
+    margin-bottom: 1em;
+  }
+
+  .peer-nominate-field {
+    margin-bottom: 1.25em;
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.35em;
+    }
+  }
+
+  .peer-nominate-badge-select {
+    width: 100%;
+    padding: 0.5em;
+    font-size: 1em;
+  }
+
+  .peer-nominate-badge-description {
+    margin-top: 0.5em;
+    padding: 0.65em 0.85em;
+    background: var(--primary-very-low);
+    border-left: 3px solid var(--tertiary);
+    border-radius: 4px;
+    font-size: 0.95em;
+  }
+
+  .peer-nominate-reason {
+    width: 100%;
+    min-height: 7em;
+    padding: 0.5em;
+    font-family: inherit;
+    font-size: 1em;
+  }
+
+  .peer-nominate-counter {
+    margin: 0.25em 0 0;
+    font-size: 0.85em;
+    color: var(--primary-medium);
+
+    &.is-too-short {
+      color: var(--danger);
+    }
+    &.is-too-long {
+      color: var(--danger);
+    }
+  }
+
+  .peer-nominate-loading {
+    color: var(--primary-medium);
+    font-style: italic;
+  }
+
+  .peer-nominate-success {
+    text-align: center;
+    padding: 1em 0.5em;
+
+    h3 {
+      margin-top: 0;
+    }
+  }
+}
+
+.peer-nomination-admin-panel {
+  margin: 1em 0;
+  padding: 1em 1.25em;
+  background: var(--primary-very-low);
+  border: 1px solid var(--primary-low);
+  border-radius: 6px;
+
+  &__title {
+    margin: 0 0 0.35em;
+    font-size: 1.1em;
+  }
+
+  &__state {
+    margin: 0 0 0.85em;
+    color: var(--primary-medium);
+    font-size: 0.95em;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5em;
+    flex-wrap: wrap;
+  }
+}
+
+.peer-decline-modal {
+  textarea.peer-decline-reason {
+    width: 100%;
+    min-height: 6em;
+    margin-top: 0.5em;
+    padding: 0.5em;
+    font-family: inherit;
+    font-size: 1em;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-top: 0.75em;
+  }
+}
