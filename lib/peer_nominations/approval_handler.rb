@@ -146,6 +146,24 @@ module PeerNominations
     end
 
     def send_pms!
+      if nominator.id == nominee.id
+        # Self-nomination: one combined PM, not two near-identical ones.
+        PostCreator.create!(
+          Discourse.system_user,
+          title: I18n.t("peer_nominations.pm.self.title", badge: badge.display_name),
+          raw: I18n.t(
+            "peer_nominations.pm.self.raw",
+            nominee_name: display_name(nominee),
+            badge:        badge.display_name,
+            reason:       reason_text
+          ),
+          archetype:    Archetype.private_message,
+          target_usernames: nominee.username,
+          skip_validations: true
+        )
+        return
+      end
+
       PostCreator.create!(
         Discourse.system_user,
         title: I18n.t("peer_nominations.pm.nominee.title", badge: badge.display_name),

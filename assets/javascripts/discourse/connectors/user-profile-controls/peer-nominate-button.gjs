@@ -7,13 +7,15 @@ import PeerNominateModal from "../../components/peer-nominate-modal";
 
 export default class PeerNominateButton extends Component {
   @service modal;
+  @service currentUser;
 
   // Outlet context: { siteSettings, currentUser, model }.
-  // model is the user whose profile is being viewed.
+  // model is the user whose profile is being viewed. We render on every
+  // user's profile (including the current user's own) — self-nominations
+  // are allowed and gated by admin review.
   static shouldRender(args, { siteSettings, currentUser }) {
     if (!siteSettings.peer_nominations_enabled) return false;
     if (!currentUser) return false;
-    if (currentUser.id === args.model?.id) return false;
     return true;
   }
 
@@ -21,10 +23,29 @@ export default class PeerNominateButton extends Component {
     return this.args.model;
   }
 
+  get isSelf() {
+    return this.currentUser?.id === this.profileUser?.id;
+  }
+
+  get buttonLabel() {
+    return this.isSelf
+      ? i18n("peer_nominations.nominate_button_self")
+      : i18n("peer_nominations.nominate_button");
+  }
+
+  get buttonTitle() {
+    return this.isSelf
+      ? i18n("peer_nominations.nominate_button_title_self")
+      : i18n("peer_nominations.nominate_button_title");
+  }
+
   @action
   openModal() {
     this.modal.show(PeerNominateModal, {
-      model: { profileUser: this.profileUser },
+      model: {
+        profileUser: this.profileUser,
+        isSelf: this.isSelf,
+      },
     });
   }
 
@@ -32,10 +53,10 @@ export default class PeerNominateButton extends Component {
     <button
       type="button"
       class="btn btn-default peer-nominate-btn"
-      title={{i18n "peer_nominations.nominate_button_title"}}
+      title={{this.buttonTitle}}
       {{on "click" this.openModal}}
     >
-      {{i18n "peer_nominations.nominate_button"}}
+      {{this.buttonLabel}}
     </button>
   </template>
 }

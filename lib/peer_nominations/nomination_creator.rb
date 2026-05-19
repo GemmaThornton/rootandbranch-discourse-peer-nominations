@@ -24,7 +24,8 @@ module PeerNominations
       category_id = SiteSetting.peer_nominations_category_id.to_i
       return fail(:not_configured) if category_id.zero?
 
-      return fail(:self_nominate) if @nominator.id == @nominee.id
+      # Self-nominations are intentionally allowed. The admin review step is
+      # the gate — if a self-nomination is unconvincing the admin declines.
       return fail(:badge_not_nominatable) unless badge_nominatable?
 
       min_tl = SiteSetting.peer_nominations_min_trust_level
@@ -69,15 +70,17 @@ module PeerNominations
     end
 
     def create_topic(category_id)
+      self_nomination = @nominator.id == @nominee.id
+
       title = I18n.t(
-        "peer_nominations.topic.title",
+        self_nomination ? "peer_nominations.topic.title_self" : "peer_nominations.topic.title",
         nominator: display_name(@nominator),
         nominee:   display_name(@nominee),
         badge:     @badge.display_name
       )
 
       raw = I18n.t(
-        "peer_nominations.topic.body",
+        self_nomination ? "peer_nominations.topic.body_self" : "peer_nominations.topic.body",
         nominator: display_name(@nominator),
         nominee:   display_name(@nominee),
         badge:     @badge.display_name,

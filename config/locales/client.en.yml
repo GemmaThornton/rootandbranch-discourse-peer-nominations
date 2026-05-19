@@ -8,14 +8,20 @@ en:
     peer_nominations:
       nominate_button: "Nominate for a badge"
       nominate_button_title: "Nominate this member for one of the peer-awarded badges"
+      nominate_button_self: "Nominate yourself for a badge"
+      nominate_button_title_self: "Self-nominate for one of the peer-awarded badges — an admin will review"
       modal:
         title: "Nominate %{username} for a badge"
+        title_self: "Nominate yourself for a badge"
         intro: "Choose a badge and explain why %{username} deserves it. Your nomination will be sent to the admins for review."
+        intro_self: "Choose a badge and explain why you deserve it. Your self-nomination will be sent to the admins for review — they may approve it now or ask you to wait for peer nominations first."
         badge_label: "Which badge?"
         badge_placeholder: "— pick a badge —"
         badge_description_prefix: "What it's for:"
         reason_label: "Why do they deserve it?"
+        reason_label_self: "Why do you deserve it?"
         reason_placeholder: "Tell the admins what %{username} did to deserve this badge. The more specific you can be, the better — names, dates, links if useful."
+        reason_placeholder_self: "Tell the admins what you did to deserve this badge. The more specific you can be, the better — names, dates, links if useful."
         reason_counter:
           too_short: "%{count} of %{min} characters minimum"
           ok: "%{count} characters"

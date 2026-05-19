@@ -27,20 +27,36 @@ export default class PeerNominateModal extends Component {
     return this.args.model.profileUser;
   }
 
+  get isSelf() {
+    return this.args.model.isSelf === true;
+  }
+
   get usernameLabel() {
     return this.profileUser?.name || this.profileUser?.username;
   }
 
   get titleText() {
-    return i18n("peer_nominations.modal.title", { username: this.usernameLabel });
+    return this.isSelf
+      ? i18n("peer_nominations.modal.title_self")
+      : i18n("peer_nominations.modal.title", { username: this.usernameLabel });
   }
 
   get introText() {
-    return i18n("peer_nominations.modal.intro", { username: this.usernameLabel });
+    return this.isSelf
+      ? i18n("peer_nominations.modal.intro_self")
+      : i18n("peer_nominations.modal.intro", { username: this.usernameLabel });
+  }
+
+  get reasonLabel() {
+    return this.isSelf
+      ? i18n("peer_nominations.modal.reason_label_self")
+      : i18n("peer_nominations.modal.reason_label");
   }
 
   get reasonPlaceholder() {
-    return i18n("peer_nominations.modal.reason_placeholder", { username: this.usernameLabel });
+    return this.isSelf
+      ? i18n("peer_nominations.modal.reason_placeholder_self")
+      : i18n("peer_nominations.modal.reason_placeholder", { username: this.usernameLabel });
   }
 
   get selectedBadge() {
@@ -186,7 +202,7 @@ export default class PeerNominateModal extends Component {
 
           <div class="peer-nominate-field">
             <label for="peer-nominate-reason">
-              {{i18n "peer_nominations.modal.reason_label"}}
+              {{this.reasonLabel}}
             </label>
             <textarea
               id="peer-nominate-reason"

@@ -3,8 +3,7 @@ en:
     errors:
       disabled: "Peer nominations are not enabled on this forum."
       not_configured: "Peer nominations have not been configured by an admin yet. Please ask an admin to set the nominations category."
-      trust_level: "You need to be a more established member before you can nominate others. Please post a few times and come back."
-      self_nominate: "You cannot nominate yourself for a badge."
+      trust_level: "You need to be a more established member before you can nominate. Please post a few times and come back."
       badge_not_found: "That badge does not exist or is not open for nominations."
       badge_not_nominatable: "That badge is not open for peer nominations."
       reason_too_short: "Please write at least %{min} characters explaining why this member deserves this badge."
@@ -29,6 +28,18 @@ en:
         ---
 
         *Admins: approve to grant the badge and notify both members. Decline to close this nomination silently — the nominator will not be told.*
+
+      title_self: "%{nominator} self-nominates for %{badge}"
+      body_self: |
+        **%{nominator}** has nominated themselves for the **%{badge}** badge.
+
+        Their reason:
+
+        > %{reason}
+
+        ---
+
+        *Admins: approve to grant the badge and send a confirmation PM. Decline to close this nomination silently — they will not be told. If you'd prefer to wait for peer nominations before granting, decline for now and they can be nominated again later.*
 
     pm:
       nominee:
@@ -55,6 +66,19 @@ en:
           Good news — an admin has approved your nomination of **%{nominee_name}** for the **%{badge}** badge. The badge is now showing on their profile.
 
           Thanks for taking the time to recognise a comrade.
+
+          — The Root & Branch admins
+
+      self:
+        title: "Your self-nomination for the %{badge} badge was approved"
+        raw: |
+          Hi %{nominee_name},
+
+          Good news — an admin has approved your self-nomination for the **%{badge}** badge. It will appear on your profile shortly.
+
+          The reason you gave:
+
+          > %{reason}
 
           — The Root & Branch admins
 
