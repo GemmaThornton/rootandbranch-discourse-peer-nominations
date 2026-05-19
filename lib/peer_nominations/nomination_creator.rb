@@ -55,7 +55,7 @@ module PeerNominations
     private
 
     def badge_nominatable?
-      @badge.custom_fields[PeerNominations::NOMINATABLE_FIELD].to_s == "true"
+      PeerNominations::NOMINATABLE_BADGE_NAMES.include?(@badge.name)
     end
 
     def rate_limited?

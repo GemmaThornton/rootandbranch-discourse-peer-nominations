@@ -14,8 +14,22 @@ register_asset "stylesheets/peer-nominations.scss"
 module ::PeerNominations
   PLUGIN_NAME = "peer-nominations"
 
-  # Custom field name on Badge — set to "true" (string) to make a badge nominatable.
-  NOMINATABLE_FIELD = "nominatable"
+  # The set of admin-created badges that members can nominate each other for.
+  # Match is by exact `Badge.name`. Renaming a badge here means it stops being
+  # nominatable — keep this list in step with admin-side badge renames.
+  # To add a new nominatable badge later (e.g. "Verified Lefty"), append its
+  # exact name here and ship a plugin deploy.
+  NOMINATABLE_BADGE_NAMES = [
+    "Local Signpost",
+    "Order Order!",
+    "The IT Crowd",
+    "Councillor",
+    "Crowd Pleaser",
+    "Doorstep Hero",
+    "Got the T Shirt",
+    "On It !",
+    "Rule-book Guru",
+  ].freeze
 
   # Topic custom field names — used to store the nominator/nominee/badge
   # association on the nomination topic itself, so the topic IS the
@@ -40,9 +54,12 @@ after_initialize do
   load File.expand_path("../lib/peer_nominations/nomination_creator.rb", __FILE__)
   load File.expand_path("../lib/peer_nominations/approval_handler.rb", __FILE__)
 
-  # Register the "nominatable" custom field on Badge so admins can mark
-  # individual badges as nominatable without changing schema.
-  Badge.register_custom_field_type(PeerNominations::NOMINATABLE_FIELD, :boolean)
+  # NOTE: Badge in current Discourse (8.x) does NOT expose .custom_fields
+  # the way Topic / Post / Category / User do — both register_custom_field_type
+  # AND the .custom_fields read/write accessor raise NoMethodError. So we
+  # don't try to store "nominatable" on the badge at all; we keep the list of
+  # nominatable badges as a frozen constant (PeerNominations::NOMINATABLE_BADGE_NAMES)
+  # and match by Badge.name in the controller and the nomination creator.
 
   # Topic custom field registration.
   %w[peer_nom_nominator_id peer_nom_nominee_id peer_nom_badge_id].each do |field|
@@ -68,12 +85,6 @@ after_initialize do
 
   add_to_serializer(:topic_view, :include_peer_nomination?) do
     object.topic.custom_fields[PeerNominations::TOPIC_STATE].present?
-  end
-
-  # Expose nominatable + description on the badge serializer used by the
-  # client when listing badges to nominate from.
-  add_to_serializer(:badge, :nominatable) do
-    object.custom_fields[PeerNominations::NOMINATABLE_FIELD].to_s == "true"
   end
 
   # Expose the current user's nomination state on the user serializer used

@@ -6,15 +6,12 @@ module PeerNominations
     before_action :ensure_enabled
 
     # GET /peer-nominations/nominatable-badges
-    # Returns every badge marked nominatable, with its description so the
-    # nominator can see what each badge is for from the picker.
+    # Returns the nominatable badges (from the hardcoded list in plugin.rb),
+    # with the badge description so the nominator can see what each badge
+    # is for from the picker.
     def nominatable_badges
-      badge_ids = BadgeCustomField
-        .where(name: PeerNominations::NOMINATABLE_FIELD, value: "true")
-        .pluck(:badge_id)
-
       badges = Badge
-        .where(id: badge_ids, enabled: true)
+        .where(name: PeerNominations::NOMINATABLE_BADGE_NAMES, enabled: true)
         .order(:name)
 
       render json: {
