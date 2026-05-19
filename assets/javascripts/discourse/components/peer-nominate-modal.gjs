@@ -192,7 +192,7 @@ export default class PeerNominateModal extends Component {
               </select>
             {{/if}}
 
-            {{#if this.selectedBadge}}
+            {{#if this.selectedBadge.description}}
               <p class="peer-nominate-badge-description">
                 <strong>{{i18n "peer_nominations.modal.badge_description_prefix"}}</strong>
                 {{this.selectedBadge.description}}

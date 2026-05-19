@@ -137,6 +137,12 @@ module PeerNominations
       user.name.presence || user.username
     end
 
+    # See NominationCreator#badge_inline_name — strips a leading "The " so
+    # "the The IT Crowd badge" doesn't read as a stutter inside PM copy.
+    def badge_inline_name
+      badge.display_name.to_s.sub(/\A[Tt]he\s+/, "")
+    end
+
     def swap_tag(from:, to:)
       DiscourseTagging.tag_topic_by_names(
         @topic,
@@ -150,11 +156,11 @@ module PeerNominations
         # Self-nomination: one combined PM, not two near-identical ones.
         PostCreator.create!(
           Discourse.system_user,
-          title: I18n.t("peer_nominations.pm.self.title", badge: badge.display_name),
+          title: I18n.t("peer_nominations.pm.self.title", badge: badge_inline_name),
           raw: I18n.t(
             "peer_nominations.pm.self.raw",
             nominee_name: display_name(nominee),
-            badge:        badge.display_name,
+            badge:        badge_inline_name,
             reason:       reason_text
           ),
           archetype:    Archetype.private_message,
@@ -166,12 +172,12 @@ module PeerNominations
 
       PostCreator.create!(
         Discourse.system_user,
-        title: I18n.t("peer_nominations.pm.nominee.title", badge: badge.display_name),
+        title: I18n.t("peer_nominations.pm.nominee.title", badge: badge_inline_name),
         raw: I18n.t(
           "peer_nominations.pm.nominee.raw",
           nominee_name:   display_name(nominee),
           nominator_name: display_name(nominator),
-          badge:          badge.display_name,
+          badge:          badge_inline_name,
           reason:         reason_text
         ),
         archetype:    Archetype.private_message,
@@ -186,7 +192,7 @@ module PeerNominations
           "peer_nominations.pm.nominator.raw",
           nominator_name: display_name(nominator),
           nominee_name:   display_name(nominee),
-          badge:          badge.display_name
+          badge:          badge_inline_name
         ),
         archetype:    Archetype.private_message,
         target_usernames: nominator.username,

@@ -76,14 +76,14 @@ module PeerNominations
         self_nomination ? "peer_nominations.topic.title_self" : "peer_nominations.topic.title",
         nominator: display_name(@nominator),
         nominee:   display_name(@nominee),
-        badge:     @badge.display_name
+        badge:     badge_inline_name
       )
 
       raw = I18n.t(
         self_nomination ? "peer_nominations.topic.body_self" : "peer_nominations.topic.body",
         nominator: display_name(@nominator),
         nominee:   display_name(@nominee),
-        badge:     @badge.display_name,
+        badge:     badge_inline_name,
         reason:    @reason.gsub(/\r?\n/, "\n> ")
       )
 
@@ -114,6 +114,14 @@ module PeerNominations
 
     def display_name(user)
       user.name.presence || user.username
+    end
+
+    # The badges keep their real name ("The IT Crowd") in the admin badge
+    # panel and the picker dropdown. But inside sentences like "the X badge"
+    # or "nominated for X", a leading "The " reads as a stutter or a
+    # duplicated article. Strip it just for inline rendering.
+    def badge_inline_name
+      @badge.display_name.to_s.sub(/\A[Tt]he\s+/, "")
     end
 
     def fail(key, **args)
