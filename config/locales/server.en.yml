@@ -29,9 +29,9 @@ en:
 
         *Admins: approve to grant the badge and notify both members. Decline to close this nomination silently — the nominator will not be told.*
 
-      title_self: "%{nominator} self-nominates for %{badge}"
+      title_self: "%{nominator} suggests the %{badge} badge for themselves"
       body_self: |
-        **%{nominator}** has nominated themselves for the **%{badge}** badge.
+        **%{nominator}** has suggested the **%{badge}** badge be added to their profile.
 
         Their reason:
 
@@ -39,7 +39,7 @@ en:
 
         ---
 
-        *Admins: approve to grant the badge and send a confirmation PM. Decline to close this nomination silently — they will not be told. If you'd prefer to wait for peer nominations before granting, decline for now and they can be nominated again later.*
+        *Admins: approve to add the badge and send a confirmation PM. Decline to close this suggestion silently — they will not be told. If you'd prefer to wait for peer nominations first, decline for now and they can be nominated again later.*
 
     pm:
       nominee:
@@ -70,15 +70,17 @@ en:
           — The Root & Branch admins
 
       self:
-        title: "Your self-nomination for the %{badge} badge was approved"
+        title: "The %{badge} badge has been added to your profile"
         raw: |
           Hi %{nominee_name},
 
-          Good news — an admin has approved your self-nomination for the **%{badge}** badge. It will appear on your profile shortly.
+          An admin has reviewed your suggestion and added the **%{badge}** badge to your profile. It will appear shortly.
 
           The reason you gave:
 
           > %{reason}
+
+          Thanks — this helps other members find people with your skills and experience.
 
           — The Root & Branch admins
 
