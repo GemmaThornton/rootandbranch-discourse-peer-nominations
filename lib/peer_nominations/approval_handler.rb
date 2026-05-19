@@ -137,6 +137,14 @@ module PeerNominations
       user.name.presence || user.username
     end
 
+    # Markdown link to a user's profile, e.g. "[Alice Smith](/u/alice)".
+    # Used in PM bodies so the nominator/nominee name is clickable.
+    # Avoids @mention syntax to prevent an extra mention notification
+    # firing on top of the PM itself.
+    def profile_link(user)
+      "[#{display_name(user)}](/u/#{user.username})"
+    end
+
     # See NominationCreator#badge_inline_name — strips a leading "The " so
     # "the The IT Crowd badge" doesn't read as a stutter inside PM copy.
     def badge_inline_name
@@ -177,6 +185,7 @@ module PeerNominations
           "peer_nominations.pm.nominee.raw",
           nominee_name:   display_name(nominee),
           nominator_name: display_name(nominator),
+          nominator_link: profile_link(nominator),
           badge:          badge_inline_name,
           reason:         reason_text
         ),
@@ -192,6 +201,7 @@ module PeerNominations
           "peer_nominations.pm.nominator.raw",
           nominator_name: display_name(nominator),
           nominee_name:   display_name(nominee),
+          nominee_link:   profile_link(nominee),
           badge:          badge_inline_name
         ),
         archetype:    Archetype.private_message,
