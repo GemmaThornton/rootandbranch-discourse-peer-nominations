@@ -1,11 +1,16 @@
 # frozen_string_literal: true
 
-# Flags the 9 admin-created badges as nominatable on first install.
+# Ensures the 9 admin-created nominatable badges have `multiple_grant = true`
+# so BadgeGranter creates a new UserBadge for each peer nomination instead
+# of silently no-op'ing on the second nomination for the same person.
 #
-# The badges already exist on staging and production (IDs 116–124 at the time
-# of writing, but we look up by name so an ID drift doesn't matter). This
-# migration is idempotent — if a badge isn't found it logs and moves on
-# without raising, so the migration still passes on a fresh dev DB.
+# Looks up by exact name, in step with PeerNominations::NOMINATABLE_BADGE_NAMES.
+# Idempotent — skips quietly if a badge isn't found (e.g. on a fresh dev DB
+# that doesn't have the 9 R&B badges) or is already multiple_grant.
+#
+# (Earlier versions of this migration tried to write a `nominatable` custom
+# field on each Badge, but Discourse Badge has no `.custom_fields` accessor.
+# The nominatable list is now a frozen constant in plugin.rb.)
 
 class SeedNominatableBadges < ActiveRecord::Migration[7.0]
   BADGE_NAMES = [
@@ -24,34 +29,21 @@ class SeedNominatableBadges < ActiveRecord::Migration[7.0]
     BADGE_NAMES.each do |name|
       badge = Badge.find_by(name: name)
       if badge.nil?
-        say "SKIP — badge not found by name: #{name.inspect} (this is OK on a fresh dev DB; check the spelling on staging/prod)"
+        say "SKIP — badge not found by name: #{name.inspect} (OK on a fresh dev DB; verify spelling on staging/prod if unexpected)"
         next
       end
 
-      changed = false
-
-      unless badge.multiple_grant
+      if badge.multiple_grant
+        say "Already multiple_grant: #{name}"
+      else
         badge.update_columns(multiple_grant: true)
-        changed = true
+        say "Set multiple_grant=true: #{name}"
       end
-
-      current = badge.custom_fields["nominatable"]
-      if current.to_s != "true"
-        badge.custom_fields["nominatable"] = true
-        badge.save_custom_fields(true)
-        changed = true
-      end
-
-      say(changed ? "Flagged nominatable: #{name}" : "Already nominatable: #{name}")
     end
   end
 
   def down
-    BADGE_NAMES.each do |name|
-      badge = Badge.find_by(name: name)
-      next unless badge
-      badge.custom_fields["nominatable"] = false
-      badge.save_custom_fields(true)
-    end
+    # No-op. Leaving multiple_grant=true is harmless if the plugin is removed
+    # later; flipping it back to false could orphan existing UserBadge rows.
   end
 end

@@ -49,18 +49,18 @@ After installation:
    - Set `peer_nominations_category_id` to the ID of the new category.
    - Adjust other settings as needed (trust level, rate limits, reason length).
    - Enable `peer_nominations_enabled`.
-4. For each badge you want to make nominatable:
-   - Make sure it's a custom badge (not built-in).
-   - Enable "Allow multiple grants" on the badge.
-   - Set its `nominatable` custom field to true. Via the Rails console:
-     ```ruby
-     badge = Badge.find_by(name: "Solidarity")
-     badge.multiple_grant = true
-     badge.custom_fields["nominatable"] = true
-     badge.save!
-     ```
+4. The set of nominatable badges is hardcoded in `plugin.rb` as the
+   `PeerNominations::NOMINATABLE_BADGE_NAMES` constant. To add another
+   badge to that set later, edit the constant (matched by exact `Badge.name`)
+   and ship a plugin deploy. On the Root & Branch forum, the 9 admin-created
+   badges (Local Signpost, Order Order!, The IT Crowd, Councillor,
+   Crowd Pleaser, Doorstep Hero, Got the T Shirt, On It !, Rule-book Guru)
+   are already in the list and have `multiple_grant=true` set automatically
+   by the seed migration on first install.
 
-On the Root & Branch forum the 9 admin-created badges (Local Signpost, Order Order!, The IT Crowd, Councillor, Crowd Pleaser, Doorstep Hero, Got the T Shirt, On It !, Rule-book Guru) are flagged nominatable automatically by the seed migration on first install.
+(Earlier drafts stored "nominatable" as a Discourse Badge custom field, but
+the Badge model in current Discourse doesn't expose `.custom_fields` at all
+— so the list lives in code instead.)
 
 ## Settings
 
