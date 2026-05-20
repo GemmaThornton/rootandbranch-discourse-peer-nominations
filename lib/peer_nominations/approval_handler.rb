@@ -66,6 +66,15 @@ module PeerNominations
           granted_at:     Time.current
         )
 
+        # Proper Lefty special case: also add nominee to the forum's
+        # verification group (which gates access to the National Organising
+        # category) and their local district's Verified Socialists (GP)
+        # group. Stored on the instance so send_pms! can mention what
+        # groups were actually granted.
+        if badge.name == PeerNominations::PROPER_LEFTY_BADGE_NAME
+          @proper_lefty_groups = apply_proper_lefty_group_adds(nominee)
+        end
+
         swap_tag(from: PeerNominations::TAG_UNDER_REVIEW, to: PeerNominations::TAG_APPROVED)
         @topic.custom_fields[PeerNominations::TOPIC_STATE] = "approved"
         @topic.save_custom_fields(true)
@@ -160,16 +169,23 @@ module PeerNominations
     end
 
     def send_pms!
+      proper_lefty = badge.name == PeerNominations::PROPER_LEFTY_BADGE_NAME
+      groups       = @proper_lefty_groups || {}
+
       if nominator.id == nominee.id
         # Self-nomination: one combined PM, not two near-identical ones.
+        template = proper_lefty ? "peer_nominations.pm.proper_lefty_self.raw" : "peer_nominations.pm.self.raw"
+        title_key = proper_lefty ? "peer_nominations.pm.proper_lefty_self.title" : "peer_nominations.pm.self.title"
         PostCreator.create!(
           Discourse.system_user,
-          title: I18n.t("peer_nominations.pm.self.title", badge: badge_inline_name),
+          title: I18n.t(title_key, badge: badge_inline_name),
           raw: I18n.t(
-            "peer_nominations.pm.self.raw",
-            nominee_name: display_name(nominee),
-            badge:        badge_inline_name,
-            reason:       reason_text
+            template,
+            nominee_name:    display_name(nominee),
+            badge:           badge_inline_name,
+            reason:          reason_text,
+            national_group:  groups[:national_group_label].to_s,
+            district_group:  groups[:district_group_label].to_s
           ),
           archetype:    Archetype.private_message,
           target_usernames: nominee.username,
@@ -178,16 +194,20 @@ module PeerNominations
         return
       end
 
+      nominee_template  = proper_lefty ? "peer_nominations.pm.proper_lefty_nominee.raw" : "peer_nominations.pm.nominee.raw"
+      nominee_title_key = proper_lefty ? "peer_nominations.pm.proper_lefty_nominee.title" : "peer_nominations.pm.nominee.title"
       PostCreator.create!(
         Discourse.system_user,
-        title: I18n.t("peer_nominations.pm.nominee.title", badge: badge_inline_name),
+        title: I18n.t(nominee_title_key, badge: badge_inline_name),
         raw: I18n.t(
-          "peer_nominations.pm.nominee.raw",
-          nominee_name:   display_name(nominee),
-          nominator_name: display_name(nominator),
-          nominator_link: profile_link(nominator),
-          badge:          badge_inline_name,
-          reason:         reason_text
+          nominee_template,
+          nominee_name:    display_name(nominee),
+          nominator_name:  display_name(nominator),
+          nominator_link:  profile_link(nominator),
+          badge:           badge_inline_name,
+          reason:          reason_text,
+          national_group:  groups[:national_group_label].to_s,
+          district_group:  groups[:district_group_label].to_s
         ),
         archetype:    Archetype.private_message,
         target_usernames: nominee.username,
@@ -208,6 +228,45 @@ module PeerNominations
         target_usernames: nominator.username,
         skip_validations: true
       )
+    end
+
+    # Adds the user to (a) the forum's verification group named by the
+    # red_star_verification_group_name site setting (read access to the
+    # National Organising category) and (b) their district's vs_gp_*
+    # group via the existing Red Star plugin's VsGpDistrictAssigner.
+    # Returns labels for the groups actually granted (or nil per side
+    # if the lookup/add silently failed), for use in PM copy.
+    def apply_proper_lefty_group_adds(user)
+      result = { national_group_label: nil, district_group_label: nil }
+
+      national_name = SiteSetting.respond_to?(:red_star_verification_group_name) ? SiteSetting.red_star_verification_group_name : nil
+      if national_name.present?
+        national_group = Group.find_by(name: national_name)
+        if national_group
+          unless GroupUser.exists?(group_id: national_group.id, user_id: user.id)
+            national_group.add(user)
+          end
+          result[:national_group_label] = national_group.full_name.presence || national_group.name
+        else
+          Rails.logger.warn("[PeerNominations] Proper Lefty: configured national group #{national_name.inspect} not found")
+        end
+      end
+
+      if defined?(::RedStarEndorsements::VsGpDistrictAssigner)
+        district_result = ::RedStarEndorsements::VsGpDistrictAssigner.add_user_to_district_group(user)
+        if district_result[:ok]
+          result[:district_group_label] = district_result[:category_name]
+        elsif district_result[:error] == :already_in_group
+          # Already a member — still surface the label so the PM is accurate.
+          result[:district_group_label] = "#{district_result[:district]}#{::RedStarEndorsements::VsGpDistrictAssigner::CATEGORY_SUFFIX}"
+        else
+          Rails.logger.warn("[PeerNominations] Proper Lefty: VsGpDistrictAssigner returned error=#{district_result[:error].inspect} for user #{user.id}")
+        end
+      else
+        Rails.logger.warn("[PeerNominations] Proper Lefty: RedStarEndorsements::VsGpDistrictAssigner not loaded — district add skipped")
+      end
+
+      result
     end
 
     def fail(key, **args)

@@ -7,12 +7,17 @@ module PeerNominations
 
     # GET /peer-nominations/nominatable-badges
     # Returns the nominatable badges (from the hardcoded list in plugin.rb),
-    # with the badge description so the nominator can see what each badge
-    # is for from the picker.
+    # in the order they appear in NOMINATABLE_BADGE_NAMES — so the picker
+    # dropdown reflects plugin-defined priority (e.g. Proper Lefty first)
+    # rather than alphabetical.
     def nominatable_badges
-      badges = Badge
+      enabled_by_name = Badge
         .where(name: PeerNominations::NOMINATABLE_BADGE_NAMES, enabled: true)
-        .order(:name)
+        .index_by(&:name)
+
+      badges = PeerNominations::NOMINATABLE_BADGE_NAMES
+        .map { |n| enabled_by_name[n] }
+        .compact
 
       render json: {
         badges: ActiveModel::ArraySerializer.new(
