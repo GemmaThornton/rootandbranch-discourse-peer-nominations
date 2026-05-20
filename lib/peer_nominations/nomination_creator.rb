@@ -40,12 +40,6 @@ module PeerNominations
         return fail(:already_approved)
       end
 
-      if rate_limited?
-        return fail(:rate_limited,
-                    count: SiteSetting.peer_nominations_rate_limit_count,
-                    days:  SiteSetting.peer_nominations_rate_limit_window_days)
-      end
-
       topic = create_topic(category_id)
       return fail(:generic) unless topic
 
@@ -56,17 +50,6 @@ module PeerNominations
 
     def badge_nominatable?
       PeerNominations::NOMINATABLE_BADGE_NAMES.include?(@badge.name)
-    end
-
-    def rate_limited?
-      window_start = SiteSetting.peer_nominations_rate_limit_window_days.days.ago
-      limit        = SiteSetting.peer_nominations_rate_limit_count
-
-      Topic
-        .joins(:_custom_fields)
-        .where(topic_custom_fields: { name: PeerNominations::TOPIC_NOMINATOR_ID, value: @nominator.id.to_s })
-        .where("topics.created_at >= ?", window_start)
-        .count >= limit
     end
 
     def create_topic(category_id)

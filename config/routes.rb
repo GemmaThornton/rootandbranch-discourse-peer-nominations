@@ -5,6 +5,7 @@ PeerNominations::Engine.routes.draw do
   post "/"                                              => "nominations#create"
   post "/:topic_id/approve"                             => "nominations#approve"
   post "/:topic_id/decline"                             => "nominations#decline"
+  post "/:topic_id/decline-as-nominee"                  => "nominations#decline_as_nominee"
   post "/:topic_id/add-nominee-to-national-group"       => "nominations#add_nominee_to_national_group"
   post "/:topic_id/add-nominee-to-district-group"       => "nominations#add_nominee_to_district_group"
 end

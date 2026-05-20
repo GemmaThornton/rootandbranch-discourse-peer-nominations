@@ -54,11 +54,11 @@ en:
         decline_cancel: "Cancel"
         approved_toast: "Badge granted. Both members have been sent a PM."
         declined_toast: "Nomination declined. Topic closed."
-        proper_lefty:
+        known_lefty:
           grant_count:
-            one: "This member has 1 approved Proper Lefty grant."
-            other: "This member has %{count} approved Proper Lefty grants."
-          group_hint: "Use the buttons below to give this member access to organising spaces, independently of approving this individual nomination. Each button is safe to click on multiple Proper Lefty topics — they're idempotent."
+            one: "This member has 1 approved Known Lefty grant."
+            other: "This member has %{count} approved Known Lefty grants."
+          group_hint: "Use the buttons below to give this member access to organising spaces, independently of approving this individual nomination. Each button is safe to click on multiple Known Lefty topics — they're idempotent."
           national_button: "Add to Verified Socialists group"
           national_button_busy: "Adding…"
           district_button: "Add to district Verified Socialists (GP) group"
@@ -67,5 +67,12 @@ en:
           national_already_toast: "Already in %{group}."
           district_added_toast: "Added to %{group}."
           district_already_toast: "Already in %{group}."
+      decline_banner:
+        hint_text: "If you'd prefer not to have this badge associated with your profile, you can decline it. The nominator won't be told."
+        button: "Decline this badge"
+        button_busy: "Declining…"
+        confirm_message: "Are you sure you want to decline this badge? It will be removed from your profile and won't be re-granted from this nomination."
+        declined_toast: "Badge declined and removed from your profile."
+        done_text: "You've declined this badge. It's been removed from your profile."
       errors:
         generic: "Something went wrong. Please try again."

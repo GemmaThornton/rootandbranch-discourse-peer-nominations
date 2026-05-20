@@ -9,7 +9,7 @@ module PeerNominations
     # GET /peer-nominations/nominatable-badges
     # Returns the nominatable badges (from the hardcoded list in plugin.rb),
     # in the order they appear in NOMINATABLE_BADGE_NAMES — so the picker
-    # dropdown reflects plugin-defined priority (e.g. Proper Lefty first)
+    # dropdown reflects plugin-defined priority (e.g. Known Lefty first)
     # rather than alphabetical.
     def nominatable_badges
       enabled_by_name = Badge
@@ -135,6 +135,23 @@ module PeerNominations
       end
     end
 
+    # POST /peer-nominations/:topic_id/decline-as-nominee
+    # Nominee-initiated decline of an already-approved badge. Reverses
+    # the BadgeGranter.grant, deletes the PeerNominationGrant row, and
+    # marks the original topic as "declined-by-nominee". Guarded so
+    # only the topic's nominee can call it.
+    def decline_as_nominee
+      topic = locate_topic
+      result = ApprovalHandler.decline_as_nominee(topic: topic, nominee: current_user)
+
+      if result.success?
+        render json: success_json
+      else
+        render json: { error: I18n.t("peer_nominations.errors.#{result.error_key}") },
+               status: error_status_for(result.error_key)
+      end
+    end
+
     # POST /peer-nominations/:topic_id/decline
     # body: { decline_reason: "..." }
     def decline
@@ -181,8 +198,6 @@ module PeerNominations
       case key
       when :trust_level, :not_admin
         :forbidden
-      when :rate_limited
-        :too_many_requests
       when :already_approved, :already_resolved
         :conflict
       when :topic_not_a_nomination, :badge_not_found, :badge_not_nominatable

@@ -20,7 +20,7 @@ module ::PeerNominations
   # Renaming a badge here means it stops being nominatable — keep this list
   # in step with admin-side badge renames.
   NOMINATABLE_BADGE_NAMES = [
-    "Proper Lefty",
+    "Known Lefty",
     "Local Signpost",
     "Order Order!",
     "The IT Crowd",
@@ -32,13 +32,14 @@ module ::PeerNominations
     "Rule-book Guru",
   ].freeze
 
-  # Special-case badge that, when approved, also adds the nominee to the
-  # forum's verification group (read access to the National Organising
-  # category) and their local <District> Verified Socialists (GP) group.
-  # The group-add logic for the district side reuses the existing Red Star
-  # plugin's `VsGpDistrictAssigner` — both plugins are loaded into the
-  # same Discourse app, so the constant is reachable.
-  PROPER_LEFTY_BADGE_NAME = "Proper Lefty"
+  # Special-case badge that surfaces extra admin buttons in the
+  # nomination-topic admin panel — "Add to Verified Socialists group"
+  # (read access to National Organising) and "Add to district Verified
+  # Socialists (GP) group" (via Red Star plugin's VsGpDistrictAssigner).
+  # Approval of the badge itself is a normal nomination — the group adds
+  # are a separate admin decision once the member has accumulated a few
+  # Known Lefty grants.
+  KNOWN_LEFTY_BADGE_NAME = "Known Lefty"
 
   # Topic custom field names — used to store the nominator/nominee/badge
   # association on the nomination topic itself, so the topic IS the
@@ -46,12 +47,18 @@ module ::PeerNominations
   TOPIC_NOMINATOR_ID = "peer_nom_nominator_id"
   TOPIC_NOMINEE_ID   = "peer_nom_nominee_id"
   TOPIC_BADGE_ID     = "peer_nom_badge_id"
-  TOPIC_STATE        = "peer_nom_state" # "under-review" | "approved" | "declined"
+  TOPIC_STATE        = "peer_nom_state" # "under-review" | "approved" | "declined" | "declined-by-nominee"
   TOPIC_DECLINE_REASON = "peer_nom_decline_reason"
 
-  TAG_UNDER_REVIEW = "under-review"
-  TAG_APPROVED     = "approved"
-  TAG_DECLINED     = "declined"
+  # Set on the nominee's approval PM (not the nomination topic itself).
+  # Holds the original nomination topic id, so the in-PM "Decline this
+  # badge" connector knows which nomination to decline.
+  PM_DECLINE_FOR_TOPIC = "peer_nom_decline_for_topic_id"
+
+  TAG_UNDER_REVIEW         = "under-review"
+  TAG_APPROVED             = "approved"
+  TAG_DECLINED             = "declined"
+  TAG_DECLINED_BY_NOMINEE  = "declined-by-nominee"
 end
 
 require_relative "lib/peer_nominations/engine"
@@ -71,7 +78,7 @@ after_initialize do
   # and match by Badge.name in the controller and the nomination creator.
 
   # Topic custom field registration.
-  %w[peer_nom_nominator_id peer_nom_nominee_id peer_nom_badge_id].each do |field|
+  %w[peer_nom_nominator_id peer_nom_nominee_id peer_nom_badge_id peer_nom_decline_for_topic_id].each do |field|
     Topic.register_custom_field_type(field, :integer)
   end
   Topic.register_custom_field_type(PeerNominations::TOPIC_STATE, :string)
@@ -79,9 +86,9 @@ after_initialize do
 
   # Surface the peer-nomination state on the topic_view serializer so the
   # admin Approve/Decline panel can render itself from the topic JSON.
-  # `badge_name` and `proper_lefty_grant_count` let the panel show the
+  # `badge_name` and `known_lefty_grant_count` let the panel show the
   # extra "add to verification group / district group" buttons for
-  # Proper Lefty topics, alongside how many approved grants the nominee
+  # Known Lefty topics, alongside how many approved grants the nominee
   # has accumulated so far.
   add_to_serializer(:topic_view, :peer_nomination) do
     state = object.topic.custom_fields[PeerNominations::TOPIC_STATE].to_s
@@ -91,21 +98,21 @@ after_initialize do
     badge    = Badge.find_by(id: badge_id)
     nominee_id = object.topic.custom_fields[PeerNominations::TOPIC_NOMINEE_ID].to_i
 
-    proper_lefty_count = nil
-    if badge&.name == PeerNominations::PROPER_LEFTY_BADGE_NAME
-      proper_lefty_count = PeerNominationGrant
+    known_lefty_count = nil
+    if badge&.name == PeerNominations::KNOWN_LEFTY_BADGE_NAME
+      known_lefty_count = PeerNominationGrant
         .where(nominee_id: nominee_id, badge_id: badge_id)
         .count
     end
 
     {
-      state:                     state,
-      nominator_id:              object.topic.custom_fields[PeerNominations::TOPIC_NOMINATOR_ID].to_i,
-      nominee_id:                nominee_id,
-      badge_id:                  badge_id,
-      badge_name:                badge&.name,
-      proper_lefty_grant_count:  proper_lefty_count,
-      resolved_at:               (state == "under-review" ? nil : object.topic.updated_at),
+      state:                    state,
+      nominator_id:             object.topic.custom_fields[PeerNominations::TOPIC_NOMINATOR_ID].to_i,
+      nominee_id:               nominee_id,
+      badge_id:                 badge_id,
+      badge_name:               badge&.name,
+      known_lefty_grant_count:  known_lefty_count,
+      resolved_at:              (state == "under-review" ? nil : object.topic.updated_at),
     }
   end
 
@@ -119,5 +126,16 @@ after_initialize do
     return false unless scope.current_user
     return false if scope.current_user.id == object.id
     SiteSetting.peer_nominations_enabled
+  end
+
+  # Surface the "this PM offers a decline option" flag on PM topics so
+  # the nominee's PM renders the in-PM Decline button. Value is the
+  # original nomination topic id that the decline action targets.
+  add_to_serializer(:topic_view, :peer_nom_decline_for_topic_id) do
+    object.topic.custom_fields[PeerNominations::PM_DECLINE_FOR_TOPIC]&.to_i
+  end
+
+  add_to_serializer(:topic_view, :include_peer_nom_decline_for_topic_id?) do
+    object.topic.custom_fields[PeerNominations::PM_DECLINE_FOR_TOPIC].present?
   end
 end

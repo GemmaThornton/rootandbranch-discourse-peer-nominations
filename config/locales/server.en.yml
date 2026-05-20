@@ -9,7 +9,6 @@ en:
       reason_too_short: "Please write at least %{min} characters explaining why this member deserves this badge."
       reason_too_long: "Please keep your nomination under %{max} characters."
       already_approved: "You have already successfully nominated this member for this badge."
-      rate_limited: "You can nominate up to %{count} members in any %{days}-day period. Please wait before nominating again."
       topic_not_a_nomination: "That topic is not a peer nomination."
       not_admin: "Only admins can approve or decline nominations."
       already_resolved: "This nomination has already been approved or declined."
@@ -55,6 +54,10 @@ en:
 
           Your new badge will appear on your profile shortly.
 
+          ---
+
+          *If you'd rather not have this badge associated with your profile, there's a Decline button at the top of this message. We hope you'll wear it — peer-awarded badges help the wider community find people with the skills and experience they need — but the choice is yours.*
+
           Thanks for everything you do.
 
           — The Root & Branch admins
@@ -82,13 +85,15 @@ en:
 
           Thanks — this helps other members find people with your skills and experience.
 
+          ---
+
+          *Changed your mind? There's a Decline button at the top of this message that will remove the badge.*
+
           — The Root & Branch admins
 
   site_settings:
     peer_nominations_enabled: "Enable the peer nominations system"
     peer_nominations_category_id: "Category ID where nomination topics are created. Must be restricted to admins/moderators."
     peer_nominations_min_trust_level: "Minimum trust level required to submit a nomination"
-    peer_nominations_rate_limit_count: "Maximum number of nominations a member can submit within the rate-limit window"
-    peer_nominations_rate_limit_window_days: "Rate-limit window in days"
     peer_nominations_min_reason_length: "Minimum number of characters required in a nomination reason"
     peer_nominations_max_reason_length: "Maximum number of characters allowed in a nomination reason"
