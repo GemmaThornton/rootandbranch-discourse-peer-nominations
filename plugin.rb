@@ -79,16 +79,33 @@ after_initialize do
 
   # Surface the peer-nomination state on the topic_view serializer so the
   # admin Approve/Decline panel can render itself from the topic JSON.
+  # `badge_name` and `proper_lefty_grant_count` let the panel show the
+  # extra "add to verification group / district group" buttons for
+  # Proper Lefty topics, alongside how many approved grants the nominee
+  # has accumulated so far.
   add_to_serializer(:topic_view, :peer_nomination) do
     state = object.topic.custom_fields[PeerNominations::TOPIC_STATE].to_s
     next nil if state.blank?
 
+    badge_id = object.topic.custom_fields[PeerNominations::TOPIC_BADGE_ID].to_i
+    badge    = Badge.find_by(id: badge_id)
+    nominee_id = object.topic.custom_fields[PeerNominations::TOPIC_NOMINEE_ID].to_i
+
+    proper_lefty_count = nil
+    if badge&.name == PeerNominations::PROPER_LEFTY_BADGE_NAME
+      proper_lefty_count = PeerNominationGrant
+        .where(nominee_id: nominee_id, badge_id: badge_id)
+        .count
+    end
+
     {
-      state:         state,
-      nominator_id:  object.topic.custom_fields[PeerNominations::TOPIC_NOMINATOR_ID].to_i,
-      nominee_id:    object.topic.custom_fields[PeerNominations::TOPIC_NOMINEE_ID].to_i,
-      badge_id:      object.topic.custom_fields[PeerNominations::TOPIC_BADGE_ID].to_i,
-      resolved_at:   (state == "under-review" ? nil : object.topic.updated_at),
+      state:                     state,
+      nominator_id:              object.topic.custom_fields[PeerNominations::TOPIC_NOMINATOR_ID].to_i,
+      nominee_id:                nominee_id,
+      badge_id:                  badge_id,
+      badge_name:                badge&.name,
+      proper_lefty_grant_count:  proper_lefty_count,
+      resolved_at:               (state == "under-review" ? nil : object.topic.updated_at),
     }
   end
 

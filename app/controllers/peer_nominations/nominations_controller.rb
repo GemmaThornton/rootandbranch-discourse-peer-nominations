@@ -4,6 +4,7 @@ module PeerNominations
   class NominationsController < ::ApplicationController
     before_action :ensure_logged_in
     before_action :ensure_enabled
+    before_action :ensure_staff_for_group_actions, only: [:add_nominee_to_national_group, :add_nominee_to_district_group]
 
     # GET /peer-nominations/nominatable-badges
     # Returns the nominatable badges (from the hardcoded list in plugin.rb),
@@ -69,6 +70,71 @@ module PeerNominations
       end
     end
 
+    # POST /peer-nominations/:topic_id/add-nominee-to-national-group
+    # Adds the nomination topic's nominee to the forum's verification
+    # group (whatever red_star_verification_group_name is set to —
+    # gives read access to the National Organising category). Used
+    # by the admin panel's "Add to Verified Socialists" button.
+    # Idempotent — already-in-group returns 200 with status "already".
+    def add_nominee_to_national_group
+      topic = locate_topic
+      user_obj = nominee_for(topic)
+      raise Discourse::NotFound unless user_obj
+
+      group_name = SiteSetting.red_star_verification_group_name
+      if group_name.blank?
+        return render json: { error: "Verification group is not configured (site setting `red_star_verification_group_name`)." },
+                      status: :unprocessable_entity
+      end
+
+      group = Group.find_by(name: group_name)
+      unless group
+        return render json: { error: "Verification group #{group_name.inspect} not found." },
+                      status: :unprocessable_entity
+      end
+
+      if GroupUser.exists?(group_id: group.id, user_id: user_obj.id)
+        return render json: { status: "already", label: friendly_group_label(group) }
+      end
+
+      group.add(user_obj)
+      render json: { status: "added", label: friendly_group_label(group) }
+    end
+
+    # POST /peer-nominations/:topic_id/add-nominee-to-district-group
+    # Adds the nomination topic's nominee to their district's
+    # vs_gp_<slug> "Verified Socialists (GP)" group, creating the
+    # group + category lazily via the existing Red Star plugin's
+    # VsGpDistrictAssigner. Returns a friendly error if the nominee
+    # has no postcode/district set.
+    def add_nominee_to_district_group
+      topic = locate_topic
+      user_obj = nominee_for(topic)
+      raise Discourse::NotFound unless user_obj
+
+      unless defined?(::RedStarEndorsements::VsGpDistrictAssigner)
+        return render json: { error: "District assigner not available — the Red Star plugin must be installed alongside peer-nominations." },
+                      status: :unprocessable_entity
+      end
+
+      result = ::RedStarEndorsements::VsGpDistrictAssigner.add_user_to_district_group(user_obj)
+
+      case
+      when result[:ok]
+        render json: { status: "added", label: result[:category_name] }
+      when result[:error] == :no_district
+        render json: { error: "#{user_obj.username} has no postcode or district set — they need to fill that in before they can be added to a district group." },
+               status: :unprocessable_entity
+      when result[:error] == :already_in_group
+        label = "#{result[:district]}#{::RedStarEndorsements::VsGpDistrictAssigner::CATEGORY_SUFFIX}"
+        render json: { status: "already", label: label }
+      else
+        Rails.logger.warn("[PeerNominations] district add failed for user #{user_obj.id}: #{result.inspect}")
+        render json: { error: "Could not add to district group — check the logs." },
+               status: :unprocessable_entity
+      end
+    end
+
     # POST /peer-nominations/:topic_id/decline
     # body: { decline_reason: "..." }
     def decline
@@ -95,8 +161,20 @@ module PeerNominations
       topic
     end
 
+    def nominee_for(topic)
+      User.find_by(id: topic.custom_fields[PeerNominations::TOPIC_NOMINEE_ID].to_i)
+    end
+
+    def friendly_group_label(group)
+      group.full_name.presence || group.name
+    end
+
     def ensure_enabled
       raise Discourse::NotFound unless SiteSetting.peer_nominations_enabled
+    end
+
+    def ensure_staff_for_group_actions
+      raise Discourse::InvalidAccess unless current_user&.admin? || current_user&.moderator?
     end
 
     def error_status_for(key)
