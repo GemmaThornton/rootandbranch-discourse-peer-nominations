@@ -28,10 +28,12 @@ This plugin follows the same branching and deployment workflow as the other Root
    git checkout -b my-feature
    ```
 2. Make changes, commit, push.
-3. Open a PR into `next`. Merging to `next` automatically triggers a staging rebuild of the forum (via repository dispatch to the `rootandbranch-forum` repo's GitHub Actions).
-4. Verify on `http://rootandbranch-staging` (Tailscale).
+3. Open a PR into `next`. **Merging does not auto-deploy** — under the current model (forum PR #19, 2026-05-19) plugin deploys are triggered manually via the forum repo's Actions tab.
+4. To ship to staging: in the **forum** repo on GitHub, Actions → **Deploy to Staging** → **Run workflow** → leave branch on `next` → green button. Verify on `http://rootandbranch-staging` (Tailscale).
 5. PR from `next` into `main`, merge.
-6. Create a GitHub Release on `main`. The release automatically triggers a production rebuild with zero downtime via the blue/green swap.
+6. To ship to production: forum repo → Actions → **Deploy to Production** → **Run workflow**. Blue/green swap, zero downtime.
+
+See `rootandbranch-forum/CLAUDE.md` for the canonical deploy playbook.
 
 The plugin is installed in the forum by a `git clone` line in `containers/app.yml` in the `rootandbranch-forum` repo. If this is the first deploy of the plugin, that line must be added in a coordinated PR to the forum repo.
 
@@ -94,9 +96,9 @@ assets/
     components/                    # Nominate modal, Decline modal
   stylesheets/
     peer-nominations.scss
-.github/workflows/
-  notify-staging.yml               # Dispatches forum staging rebuild on push to next
-  notify-production.yml            # Dispatches forum production rebuild on Release
+.github/workflows/                 # (none — deploys are triggered manually
+                                   #  from the forum repo's Actions tab; see
+                                   #  rootandbranch-forum/CLAUDE.md)
 README.md
 CLAUDE.md                          # This file
 ```
