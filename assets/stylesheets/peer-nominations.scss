@@ -93,6 +93,17 @@
     gap: 0.5em;
     flex-wrap: wrap;
   }
+
+  // Greyed-out "Added ✓" look on the group-add buttons after the user
+  // has been added (either pre-loaded from the serializer flags or set
+  // locally after a successful click).
+  &__group-added {
+    opacity: 0.65;
+    cursor: default;
+    background: var(--primary-low);
+    color: var(--primary-medium);
+    border-color: var(--primary-low-mid);
+  }
 }
 
 .peer-nomination-decline-banner {

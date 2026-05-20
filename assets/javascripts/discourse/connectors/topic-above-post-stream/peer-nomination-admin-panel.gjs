@@ -27,6 +27,8 @@ export default class PeerNominationAdminPanel extends Component {
   @tracked nationalBusy = false;
   @tracked districtBusy = false;
   @tracked localState = null; // overrides server state after a click
+  @tracked nationalLocalAdded = false; // overrides serializer flag after a click
+  @tracked districtLocalAdded = false;
 
   static shouldRender(args, { currentUser }) {
     if (!currentUser) return false;
@@ -66,6 +68,14 @@ export default class PeerNominationAdminPanel extends Component {
 
   get knownLeftyGrantCount() {
     return this.peer?.known_lefty_grant_count ?? 0;
+  }
+
+  get nominee_in_national_group() {
+    return this.nationalLocalAdded || !!this.peer?.nominee_in_national_group;
+  }
+
+  get nominee_in_district_vs_gp_group() {
+    return this.districtLocalAdded || !!this.peer?.nominee_in_district_vs_gp_group;
   }
 
   get stateLabel() {
@@ -127,13 +137,14 @@ export default class PeerNominationAdminPanel extends Component {
 
   @action
   async addToNationalGroup() {
-    if (this.nationalBusy) return;
+    if (this.nationalBusy || this.nominee_in_national_group) return;
     this.nationalBusy = true;
     try {
       const result = await ajax(`/peer-nominations/${this.topic.id}/add-nominee-to-national-group`, { type: "POST" });
+      this.nationalLocalAdded = true;
       const key = result.status === "already"
-        ? "peer_nominations.admin_panel.national_already_toast"
-        : "peer_nominations.admin_panel.national_added_toast";
+        ? "peer_nominations.admin_panel.known_lefty.national_already_toast"
+        : "peer_nominations.admin_panel.known_lefty.national_added_toast";
       this.showToast(key, { interpolate: { group: result.label } });
     } catch (err) {
       popupAjaxError(err);
@@ -144,13 +155,14 @@ export default class PeerNominationAdminPanel extends Component {
 
   @action
   async addToDistrictGroup() {
-    if (this.districtBusy) return;
+    if (this.districtBusy || this.nominee_in_district_vs_gp_group) return;
     this.districtBusy = true;
     try {
       const result = await ajax(`/peer-nominations/${this.topic.id}/add-nominee-to-district-group`, { type: "POST" });
+      this.districtLocalAdded = true;
       const key = result.status === "already"
-        ? "peer_nominations.admin_panel.district_already_toast"
-        : "peer_nominations.admin_panel.district_added_toast";
+        ? "peer_nominations.admin_panel.known_lefty.district_already_toast"
+        : "peer_nominations.admin_panel.known_lefty.district_added_toast";
       this.showToast(key, { interpolate: { group: result.label } });
     } catch (err) {
       popupAjaxError(err);
@@ -202,11 +214,13 @@ export default class PeerNominationAdminPanel extends Component {
           <div class="peer-nomination-admin-panel__actions">
             <button
               type="button"
-              class="btn btn-default"
-              disabled={{this.nationalBusy}}
+              class="btn {{if this.nominee_in_national_group 'btn-default peer-nomination-admin-panel__group-added' 'btn-primary'}}"
+              disabled={{if this.nominee_in_national_group true this.nationalBusy}}
               {{on "click" this.addToNationalGroup}}
             >
-              {{#if this.nationalBusy}}
+              {{#if this.nominee_in_national_group}}
+                {{i18n "peer_nominations.admin_panel.known_lefty.national_button_added"}}
+              {{else if this.nationalBusy}}
                 {{i18n "peer_nominations.admin_panel.known_lefty.national_button_busy"}}
               {{else}}
                 {{i18n "peer_nominations.admin_panel.known_lefty.national_button"}}
@@ -214,11 +228,13 @@ export default class PeerNominationAdminPanel extends Component {
             </button>
             <button
               type="button"
-              class="btn btn-default"
-              disabled={{this.districtBusy}}
+              class="btn {{if this.nominee_in_district_vs_gp_group 'btn-default peer-nomination-admin-panel__group-added' 'btn-primary'}}"
+              disabled={{if this.nominee_in_district_vs_gp_group true this.districtBusy}}
               {{on "click" this.addToDistrictGroup}}
             >
-              {{#if this.districtBusy}}
+              {{#if this.nominee_in_district_vs_gp_group}}
+                {{i18n "peer_nominations.admin_panel.known_lefty.district_button_added"}}
+              {{else if this.districtBusy}}
                 {{i18n "peer_nominations.admin_panel.known_lefty.district_button_busy"}}
               {{else}}
                 {{i18n "peer_nominations.admin_panel.known_lefty.district_button"}}

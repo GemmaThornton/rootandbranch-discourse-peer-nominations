@@ -62,12 +62,21 @@ module PeerNominations
         badge:     badge_inline_name
       )
 
+      # If admin approves this nomination, the nominee will hold N+1 grants
+      # of this badge. Show that count in the topic body so the reviewer
+      # has context (e.g. "this would be their 3rd Known Lefty badge").
+      existing = PeerNominationGrant.where(nominee_id: @nominee.id, badge_id: @badge.id).count
+      would_be_ordinal = ordinal(existing + 1)
+
       raw = I18n.t(
         self_nomination ? "peer_nominations.topic.body_self" : "peer_nominations.topic.body",
-        nominator: display_name(@nominator),
-        nominee:   display_name(@nominee),
-        badge:     badge_inline_name,
-        reason:    @reason.gsub(/\r?\n/, "\n> ")
+        nominator:        display_name(@nominator),
+        nominator_link:   profile_link(@nominator),
+        nominee:          display_name(@nominee),
+        nominee_link:     profile_link(@nominee),
+        badge:            badge_inline_name,
+        reason:           @reason.gsub(/\r?\n/, "\n> "),
+        would_be_ordinal: would_be_ordinal
       )
 
       creator = PostCreator.new(
@@ -99,12 +108,27 @@ module PeerNominations
       user.name.presence || user.username
     end
 
+    def profile_link(user)
+      "[#{display_name(user)}](/u/#{user.username})"
+    end
+
     # The badges keep their real name ("The IT Crowd") in the admin badge
     # panel and the picker dropdown. But inside sentences like "the X badge"
     # or "nominated for X", a leading "The " reads as a stutter or a
     # duplicated article. Strip it just for inline rendering.
     def badge_inline_name
       @badge.display_name.to_s.sub(/\A[Tt]he\s+/, "")
+    end
+
+    # Plain ordinal: 1st, 2nd, 3rd, 4th, 11th, 12th, 13th, 21st…
+    def ordinal(n)
+      return "#{n}th" if (11..13).include?(n.to_i % 100)
+      case n.to_i % 10
+      when 1 then "#{n}st"
+      when 2 then "#{n}nd"
+      when 3 then "#{n}rd"
+      else        "#{n}th"
+      end
     end
 
     def fail(key, **args)
