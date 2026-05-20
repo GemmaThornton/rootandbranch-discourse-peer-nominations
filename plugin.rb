@@ -99,20 +99,38 @@ after_initialize do
     nominee_id = object.topic.custom_fields[PeerNominations::TOPIC_NOMINEE_ID].to_i
 
     known_lefty_count = nil
+    nominee_in_national_group = false
+    nominee_in_district_vs_gp_group = false
+
     if badge&.name == PeerNominations::KNOWN_LEFTY_BADGE_NAME
       known_lefty_count = PeerNominationGrant
         .where(nominee_id: nominee_id, badge_id: badge_id)
         .count
+
+      nominee = User.find_by(id: nominee_id)
+      if nominee
+        national_group_name = SiteSetting.respond_to?(:red_star_verification_group_name) ? SiteSetting.red_star_verification_group_name : nil
+        if national_group_name.present?
+          national_group = Group.find_by(name: national_group_name)
+          nominee_in_national_group = national_group.present? && GroupUser.exists?(group_id: national_group.id, user_id: nominee.id)
+        end
+
+        if defined?(::RedStarEndorsements::VsGpDistrictAssigner)
+          nominee_in_district_vs_gp_group = ::RedStarEndorsements::VsGpDistrictAssigner.in_any_district_group?(nominee)
+        end
+      end
     end
 
     {
-      state:                    state,
-      nominator_id:             object.topic.custom_fields[PeerNominations::TOPIC_NOMINATOR_ID].to_i,
-      nominee_id:               nominee_id,
-      badge_id:                 badge_id,
-      badge_name:               badge&.name,
-      known_lefty_grant_count:  known_lefty_count,
-      resolved_at:              (state == "under-review" ? nil : object.topic.updated_at),
+      state:                            state,
+      nominator_id:                     object.topic.custom_fields[PeerNominations::TOPIC_NOMINATOR_ID].to_i,
+      nominee_id:                       nominee_id,
+      badge_id:                         badge_id,
+      badge_name:                       badge&.name,
+      known_lefty_grant_count:          known_lefty_count,
+      nominee_in_national_group:        nominee_in_national_group,
+      nominee_in_district_vs_gp_group:  nominee_in_district_vs_gp_group,
+      resolved_at:                      (state == "under-review" ? nil : object.topic.updated_at),
     }
   end
 
