@@ -47,12 +47,18 @@ module ::PeerNominations
   TOPIC_NOMINATOR_ID = "peer_nom_nominator_id"
   TOPIC_NOMINEE_ID   = "peer_nom_nominee_id"
   TOPIC_BADGE_ID     = "peer_nom_badge_id"
-  TOPIC_STATE        = "peer_nom_state" # "under-review" | "approved" | "declined"
+  TOPIC_STATE        = "peer_nom_state" # "under-review" | "approved" | "declined" | "declined-by-nominee"
   TOPIC_DECLINE_REASON = "peer_nom_decline_reason"
 
-  TAG_UNDER_REVIEW = "under-review"
-  TAG_APPROVED     = "approved"
-  TAG_DECLINED     = "declined"
+  # Set on the nominee's approval PM (not the nomination topic itself).
+  # Holds the original nomination topic id, so the in-PM "Decline this
+  # badge" connector knows which nomination to decline.
+  PM_DECLINE_FOR_TOPIC = "peer_nom_decline_for_topic_id"
+
+  TAG_UNDER_REVIEW         = "under-review"
+  TAG_APPROVED             = "approved"
+  TAG_DECLINED             = "declined"
+  TAG_DECLINED_BY_NOMINEE  = "declined-by-nominee"
 end
 
 require_relative "lib/peer_nominations/engine"
@@ -72,7 +78,7 @@ after_initialize do
   # and match by Badge.name in the controller and the nomination creator.
 
   # Topic custom field registration.
-  %w[peer_nom_nominator_id peer_nom_nominee_id peer_nom_badge_id].each do |field|
+  %w[peer_nom_nominator_id peer_nom_nominee_id peer_nom_badge_id peer_nom_decline_for_topic_id].each do |field|
     Topic.register_custom_field_type(field, :integer)
   end
   Topic.register_custom_field_type(PeerNominations::TOPIC_STATE, :string)
@@ -120,5 +126,16 @@ after_initialize do
     return false unless scope.current_user
     return false if scope.current_user.id == object.id
     SiteSetting.peer_nominations_enabled
+  end
+
+  # Surface the "this PM offers a decline option" flag on PM topics so
+  # the nominee's PM renders the in-PM Decline button. Value is the
+  # original nomination topic id that the decline action targets.
+  add_to_serializer(:topic_view, :peer_nom_decline_for_topic_id) do
+    object.topic.custom_fields[PeerNominations::PM_DECLINE_FOR_TOPIC]&.to_i
+  end
+
+  add_to_serializer(:topic_view, :include_peer_nom_decline_for_topic_id?) do
+    object.topic.custom_fields[PeerNominations::PM_DECLINE_FOR_TOPIC].present?
   end
 end

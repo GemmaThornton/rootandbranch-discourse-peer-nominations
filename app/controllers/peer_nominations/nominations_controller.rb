@@ -135,6 +135,23 @@ module PeerNominations
       end
     end
 
+    # POST /peer-nominations/:topic_id/decline-as-nominee
+    # Nominee-initiated decline of an already-approved badge. Reverses
+    # the BadgeGranter.grant, deletes the PeerNominationGrant row, and
+    # marks the original topic as "declined-by-nominee". Guarded so
+    # only the topic's nominee can call it.
+    def decline_as_nominee
+      topic = locate_topic
+      result = ApprovalHandler.decline_as_nominee(topic: topic, nominee: current_user)
+
+      if result.success?
+        render json: success_json
+      else
+        render json: { error: I18n.t("peer_nominations.errors.#{result.error_key}") },
+               status: error_status_for(result.error_key)
+      end
+    end
+
     # POST /peer-nominations/:topic_id/decline
     # body: { decline_reason: "..." }
     def decline

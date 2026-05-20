@@ -54,6 +54,10 @@ en:
 
           Your new badge will appear on your profile shortly.
 
+          ---
+
+          *If you'd rather not have this badge associated with your profile, there's a Decline button at the top of this message. We hope you'll wear it — peer-awarded badges help the wider community find people with the skills and experience they need — but the choice is yours.*
+
           Thanks for everything you do.
 
           — The Root & Branch admins
@@ -80,6 +84,10 @@ en:
           > %{reason}
 
           Thanks — this helps other members find people with your skills and experience.
+
+          ---
+
+          *Changed your mind? There's a Decline button at the top of this message that will remove the badge.*
 
           — The Root & Branch admins
 

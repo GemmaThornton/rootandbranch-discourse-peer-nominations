@@ -30,6 +30,13 @@ module PeerNominations
       new(topic: topic, admin: admin, decline_reason: decline_reason).decline
     end
 
+    # Nominee-initiated decline — revokes the granted badge, deletes the
+    # grant row, and parks the original nomination topic in
+    # "declined-by-nominee" state.
+    def self.decline_as_nominee(topic:, nominee:)
+      new(topic: topic, admin: Discourse.system_user).decline_as_nominee(nominee)
+    end
+
     def initialize(topic:, admin:, decline_reason: nil)
       @topic = topic
       @admin = admin
@@ -101,6 +108,37 @@ module PeerNominations
       Result.new(success: true)
     end
 
+    # Nominee-initiated decline. The badge has already been granted; this
+    # reverses it. Verifies the topic was actually approved and that the
+    # caller is the recorded nominee.
+    def decline_as_nominee(declining_user)
+      return fail(:topic_not_a_nomination) unless nominator && nominee && badge
+      return fail(:not_admin) unless declining_user&.id == nominee.id
+
+      current_state = @topic.custom_fields[PeerNominations::TOPIC_STATE].to_s
+      unless current_state == "approved"
+        return fail(:already_resolved)
+      end
+
+      ActiveRecord::Base.transaction do
+        grant = PeerNominationGrant.find_by(topic_id: @topic.id)
+        if grant
+          user_badge = UserBadge.find_by(id: grant.user_badge_id)
+          if user_badge
+            BadgeGranter.revoke(user_badge)
+          end
+          grant.destroy
+        end
+
+        swap_tag(from: PeerNominations::TAG_APPROVED, to: PeerNominations::TAG_DECLINED_BY_NOMINEE)
+        @topic.custom_fields[PeerNominations::TOPIC_STATE] = "declined-by-nominee"
+        @topic.save_custom_fields(true)
+        @topic.update_status("closed", true, Discourse.system_user)
+      end
+
+      Result.new(success: true)
+    end
+
     private
 
     def validate
@@ -166,10 +204,21 @@ module PeerNominations
       )
     end
 
+    # Stamps the nominee's approval PM with peer_nom_decline_for_topic_id
+    # so the in-PM "Decline this badge" connector renders for them. Points
+    # back to the original nomination topic — the decline action runs
+    # against that topic's state, not the PM.
+    def mark_pm_offers_decline!(post)
+      pm_topic = post&.topic
+      return unless pm_topic
+      pm_topic.custom_fields[PeerNominations::PM_DECLINE_FOR_TOPIC] = @topic.id
+      pm_topic.save_custom_fields(true)
+    end
+
     def send_pms!
       if nominator.id == nominee.id
         # Self-nomination: one combined PM, not two near-identical ones.
-        PostCreator.create!(
+        self_post = PostCreator.create!(
           Discourse.system_user,
           title: I18n.t("peer_nominations.pm.self.title", badge: badge_inline_name),
           raw: I18n.t(
@@ -182,10 +231,11 @@ module PeerNominations
           target_usernames: nominee.username,
           skip_validations: true
         )
+        mark_pm_offers_decline!(self_post)
         return
       end
 
-      PostCreator.create!(
+      nominee_post = PostCreator.create!(
         Discourse.system_user,
         title: I18n.t("peer_nominations.pm.nominee.title", badge: badge_inline_name),
         raw: I18n.t(
@@ -200,6 +250,7 @@ module PeerNominations
         target_usernames: nominee.username,
         skip_validations: true
       )
+      mark_pm_offers_decline!(nominee_post)
 
       PostCreator.create!(
         Discourse.system_user,
