@@ -47,9 +47,9 @@ en:
         raw: |
           Hi %{nominee_name},
 
-          **%{nominator_name}** nominated you for the **%{badge}** badge, and an admin has approved it. Congratulations!
+          %{nominator_link} nominated you for the **%{badge}** badge, and an admin has approved it. Congratulations!
 
-          Here's what %{nominator_name} said about you:
+          Here's what %{nominator_link} said about you:
 
           > %{reason}
 
@@ -63,7 +63,7 @@ en:
         raw: |
           Hi %{nominator_name},
 
-          Good news — an admin has approved your nomination of **%{nominee_name}** for the **%{badge}** badge. The badge is now showing on their profile.
+          Good news — an admin has approved your nomination of %{nominee_link} for the **%{badge}** badge. The badge is now showing on their profile.
 
           Thanks for taking the time to recognise a comrade.
 
