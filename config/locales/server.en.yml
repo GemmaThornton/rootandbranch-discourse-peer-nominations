@@ -9,7 +9,6 @@ en:
       reason_too_short: "Please write at least %{min} characters explaining why this member deserves this badge."
       reason_too_long: "Please keep your nomination under %{max} characters."
       already_approved: "You have already successfully nominated this member for this badge."
-      rate_limited: "You can nominate up to %{count} members in any %{days}-day period. Please wait before nominating again."
       topic_not_a_nomination: "That topic is not a peer nomination."
       not_admin: "Only admins can approve or decline nominations."
       already_resolved: "This nomination has already been approved or declined."
@@ -19,7 +18,9 @@ en:
     topic:
       title: "%{nominator} nominates %{nominee} for %{badge}"
       body: |
-        **%{nominator}** has nominated **%{nominee}** for the **%{badge}** badge.
+        %{nominator_link} has nominated %{nominee_link} for the **%{badge}** badge.
+
+        If awarded, this will be the **%{would_be_ordinal}** %{badge} badge that %{nominee_link} has collected.
 
         %{nominator}'s reason:
 
@@ -31,7 +32,9 @@ en:
 
       title_self: "%{nominator} suggests the %{badge} badge for themselves"
       body_self: |
-        **%{nominator}** has suggested the **%{badge}** badge be added to their profile.
+        %{nominator_link} has suggested the **%{badge}** badge be added to their profile.
+
+        If awarded, this will be the **%{would_be_ordinal}** %{badge} badge that %{nominee_link} has collected.
 
         Their reason:
 
@@ -54,6 +57,10 @@ en:
           > %{reason}
 
           Your new badge will appear on your profile shortly.
+
+          ---
+
+          If you'd rather not have this badge associated with your profile, there's a Decline button at the top of this message. We hope you'll wear it — peer-awarded badges help the wider community find people with the skills and experience they need and, in time, open up more areas for you to visit on the forum — but the choice is yours.
 
           Thanks for everything you do.
 
@@ -82,13 +89,17 @@ en:
 
           Thanks — this helps other members find people with your skills and experience.
 
+          ---
+
+          If you'd rather not have this badge associated with your profile, there's a Decline button at the top of this message. We hope you'll wear it — peer-awarded badges help the wider community find people with the skills and experience they need and, in time, open up more areas for you to visit on the forum — but the choice is yours.
+
+          Thanks for everything you do.
+
           — The Root & Branch admins
 
   site_settings:
     peer_nominations_enabled: "Enable the peer nominations system"
     peer_nominations_category_id: "Category ID where nomination topics are created. Must be restricted to admins/moderators."
     peer_nominations_min_trust_level: "Minimum trust level required to submit a nomination"
-    peer_nominations_rate_limit_count: "Maximum number of nominations a member can submit within the rate-limit window"
-    peer_nominations_rate_limit_window_days: "Rate-limit window in days"
     peer_nominations_min_reason_length: "Minimum number of characters required in a nomination reason"
     peer_nominations_max_reason_length: "Maximum number of characters allowed in a nomination reason"
