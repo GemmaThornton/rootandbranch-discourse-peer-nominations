@@ -9,7 +9,7 @@ module PeerNominations
     # GET /peer-nominations/nominatable-badges
     # Returns the nominatable badges (from the hardcoded list in plugin.rb),
     # in the order they appear in NOMINATABLE_BADGE_NAMES — so the picker
-    # dropdown reflects plugin-defined priority (e.g. Proper Lefty first)
+    # dropdown reflects plugin-defined priority (e.g. Known Lefty first)
     # rather than alphabetical.
     def nominatable_badges
       enabled_by_name = Badge
@@ -181,8 +181,6 @@ module PeerNominations
       case key
       when :trust_level, :not_admin
         :forbidden
-      when :rate_limited
-        :too_many_requests
       when :already_approved, :already_resolved
         :conflict
       when :topic_not_a_nomination, :badge_not_found, :badge_not_nominatable

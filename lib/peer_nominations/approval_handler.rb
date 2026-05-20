@@ -67,10 +67,10 @@ module PeerNominations
         )
 
         # Note: approval intentionally does NOT auto-add to groups, even
-        # for Proper Lefty. Group access (Verified Socialists / district
+        # for Known Lefty. Group access (Verified Socialists / district
         # group) is a separate admin decision — exposed via the two
         # add-nominee-to-* buttons on the admin panel — so that members
-        # collect multiple Proper Lefty grants before being promoted to
+        # collect multiple Known Lefty grants before being promoted to
         # organising spaces. See nominations_controller#add_nominee_to_*.
 
         swap_tag(from: PeerNominations::TAG_UNDER_REVIEW, to: PeerNominations::TAG_APPROVED)

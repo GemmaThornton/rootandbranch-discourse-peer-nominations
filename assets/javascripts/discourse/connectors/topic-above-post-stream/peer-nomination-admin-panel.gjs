@@ -12,11 +12,11 @@ import PeerDeclineModal from "../../components/peer-decline-modal";
 // add_to_serializer(:topic_view, :peer_nomination) hook in plugin.rb).
 // Only renders for admins/moderators on topics in a peer-nomination state.
 //
-// For "Proper Lefty" topics, also shows two extra buttons:
+// For "Known Lefty" topics, also shows two extra buttons:
 //   - Add to Verified Socialists (gives access to National Organising category)
 //   - Add to <District> Verified Socialists (GP) group
 // These are independent of the badge approval — admins use their judgement
-// based on how many Proper Lefty grants the nominee has accumulated.
+// based on how many Known Lefty grants the nominee has accumulated.
 export default class PeerNominationAdminPanel extends Component {
   @service modal;
   @service currentUser;
@@ -61,11 +61,11 @@ export default class PeerNominationAdminPanel extends Component {
   }
 
   get isProperLefty() {
-    return this.peer?.badge_name === "Proper Lefty";
+    return this.peer?.badge_name === "Known Lefty";
   }
 
-  get properLeftyGrantCount() {
-    return this.peer?.proper_lefty_grant_count ?? 0;
+  get knownLeftyGrantCount() {
+    return this.peer?.known_lefty_grant_count ?? 0;
   }
 
   get stateLabel() {
@@ -194,10 +194,10 @@ export default class PeerNominationAdminPanel extends Component {
       {{#if this.isProperLefty}}
         <div class="peer-nomination-admin-panel__proper-lefty">
           <p class="peer-nomination-admin-panel__count">
-            {{i18n "peer_nominations.admin_panel.proper_lefty.grant_count" count=this.properLeftyGrantCount}}
+            {{i18n "peer_nominations.admin_panel.known_lefty.grant_count" count=this.knownLeftyGrantCount}}
           </p>
           <p class="peer-nomination-admin-panel__group-hint">
-            {{i18n "peer_nominations.admin_panel.proper_lefty.group_hint"}}
+            {{i18n "peer_nominations.admin_panel.known_lefty.group_hint"}}
           </p>
           <div class="peer-nomination-admin-panel__actions">
             <button
@@ -207,9 +207,9 @@ export default class PeerNominationAdminPanel extends Component {
               {{on "click" this.addToNationalGroup}}
             >
               {{#if this.nationalBusy}}
-                {{i18n "peer_nominations.admin_panel.proper_lefty.national_button_busy"}}
+                {{i18n "peer_nominations.admin_panel.known_lefty.national_button_busy"}}
               {{else}}
-                {{i18n "peer_nominations.admin_panel.proper_lefty.national_button"}}
+                {{i18n "peer_nominations.admin_panel.known_lefty.national_button"}}
               {{/if}}
             </button>
             <button
@@ -219,9 +219,9 @@ export default class PeerNominationAdminPanel extends Component {
               {{on "click" this.addToDistrictGroup}}
             >
               {{#if this.districtBusy}}
-                {{i18n "peer_nominations.admin_panel.proper_lefty.district_button_busy"}}
+                {{i18n "peer_nominations.admin_panel.known_lefty.district_button_busy"}}
               {{else}}
-                {{i18n "peer_nominations.admin_panel.proper_lefty.district_button"}}
+                {{i18n "peer_nominations.admin_panel.known_lefty.district_button"}}
               {{/if}}
             </button>
           </div>

@@ -20,7 +20,7 @@ module ::PeerNominations
   # Renaming a badge here means it stops being nominatable — keep this list
   # in step with admin-side badge renames.
   NOMINATABLE_BADGE_NAMES = [
-    "Proper Lefty",
+    "Known Lefty",
     "Local Signpost",
     "Order Order!",
     "The IT Crowd",
@@ -32,13 +32,14 @@ module ::PeerNominations
     "Rule-book Guru",
   ].freeze
 
-  # Special-case badge that, when approved, also adds the nominee to the
-  # forum's verification group (read access to the National Organising
-  # category) and their local <District> Verified Socialists (GP) group.
-  # The group-add logic for the district side reuses the existing Red Star
-  # plugin's `VsGpDistrictAssigner` — both plugins are loaded into the
-  # same Discourse app, so the constant is reachable.
-  PROPER_LEFTY_BADGE_NAME = "Proper Lefty"
+  # Special-case badge that surfaces extra admin buttons in the
+  # nomination-topic admin panel — "Add to Verified Socialists group"
+  # (read access to National Organising) and "Add to district Verified
+  # Socialists (GP) group" (via Red Star plugin's VsGpDistrictAssigner).
+  # Approval of the badge itself is a normal nomination — the group adds
+  # are a separate admin decision once the member has accumulated a few
+  # Known Lefty grants.
+  KNOWN_LEFTY_BADGE_NAME = "Known Lefty"
 
   # Topic custom field names — used to store the nominator/nominee/badge
   # association on the nomination topic itself, so the topic IS the
@@ -79,9 +80,9 @@ after_initialize do
 
   # Surface the peer-nomination state on the topic_view serializer so the
   # admin Approve/Decline panel can render itself from the topic JSON.
-  # `badge_name` and `proper_lefty_grant_count` let the panel show the
+  # `badge_name` and `known_lefty_grant_count` let the panel show the
   # extra "add to verification group / district group" buttons for
-  # Proper Lefty topics, alongside how many approved grants the nominee
+  # Known Lefty topics, alongside how many approved grants the nominee
   # has accumulated so far.
   add_to_serializer(:topic_view, :peer_nomination) do
     state = object.topic.custom_fields[PeerNominations::TOPIC_STATE].to_s
@@ -91,21 +92,21 @@ after_initialize do
     badge    = Badge.find_by(id: badge_id)
     nominee_id = object.topic.custom_fields[PeerNominations::TOPIC_NOMINEE_ID].to_i
 
-    proper_lefty_count = nil
-    if badge&.name == PeerNominations::PROPER_LEFTY_BADGE_NAME
-      proper_lefty_count = PeerNominationGrant
+    known_lefty_count = nil
+    if badge&.name == PeerNominations::KNOWN_LEFTY_BADGE_NAME
+      known_lefty_count = PeerNominationGrant
         .where(nominee_id: nominee_id, badge_id: badge_id)
         .count
     end
 
     {
-      state:                     state,
-      nominator_id:              object.topic.custom_fields[PeerNominations::TOPIC_NOMINATOR_ID].to_i,
-      nominee_id:                nominee_id,
-      badge_id:                  badge_id,
-      badge_name:                badge&.name,
-      proper_lefty_grant_count:  proper_lefty_count,
-      resolved_at:               (state == "under-review" ? nil : object.topic.updated_at),
+      state:                    state,
+      nominator_id:             object.topic.custom_fields[PeerNominations::TOPIC_NOMINATOR_ID].to_i,
+      nominee_id:               nominee_id,
+      badge_id:                 badge_id,
+      badge_name:               badge&.name,
+      known_lefty_grant_count:  known_lefty_count,
+      resolved_at:              (state == "under-review" ? nil : object.topic.updated_at),
     }
   end
 
