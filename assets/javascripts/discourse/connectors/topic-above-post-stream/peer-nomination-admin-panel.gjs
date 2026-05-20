@@ -11,6 +11,12 @@ import PeerDeclineModal from "../../components/peer-decline-modal";
 // Reads the peer_nomination block from the topic JSON (added by the
 // add_to_serializer(:topic_view, :peer_nomination) hook in plugin.rb).
 // Only renders for admins/moderators on topics in a peer-nomination state.
+//
+// For "Proper Lefty" topics, also shows two extra buttons:
+//   - Add to Verified Socialists (gives access to National Organising category)
+//   - Add to <District> Verified Socialists (GP) group
+// These are independent of the badge approval — admins use their judgement
+// based on how many Proper Lefty grants the nominee has accumulated.
 export default class PeerNominationAdminPanel extends Component {
   @service modal;
   @service currentUser;
@@ -18,6 +24,8 @@ export default class PeerNominationAdminPanel extends Component {
   @service router;
 
   @tracked busy = false;
+  @tracked nationalBusy = false;
+  @tracked districtBusy = false;
   @tracked localState = null; // overrides server state after a click
 
   static shouldRender(args, { currentUser }) {
@@ -52,6 +60,14 @@ export default class PeerNominationAdminPanel extends Component {
     return this.currentState === "declined";
   }
 
+  get isProperLefty() {
+    return this.peer?.badge_name === "Proper Lefty";
+  }
+
+  get properLeftyGrantCount() {
+    return this.peer?.proper_lefty_grant_count ?? 0;
+  }
+
   get stateLabel() {
     if (this.isApproved) {
       return i18n("peer_nominations.admin_panel.state_approved", {
@@ -75,9 +91,10 @@ export default class PeerNominationAdminPanel extends Component {
     }
   }
 
-  showToast(messageKey) {
+  showToast(messageKey, opts = {}) {
     if (!this.toasts) return;
-    this.toasts.success({ data: { message: i18n(messageKey) } });
+    const message = opts.message || i18n(messageKey, opts.interpolate || {});
+    this.toasts.success({ data: { message } });
   }
 
   @action
@@ -106,6 +123,40 @@ export default class PeerNominationAdminPanel extends Component {
         },
       },
     });
+  }
+
+  @action
+  async addToNationalGroup() {
+    if (this.nationalBusy) return;
+    this.nationalBusy = true;
+    try {
+      const result = await ajax(`/peer-nominations/${this.topic.id}/add-nominee-to-national-group`, { type: "POST" });
+      const key = result.status === "already"
+        ? "peer_nominations.admin_panel.national_already_toast"
+        : "peer_nominations.admin_panel.national_added_toast";
+      this.showToast(key, { interpolate: { group: result.label } });
+    } catch (err) {
+      popupAjaxError(err);
+    } finally {
+      this.nationalBusy = false;
+    }
+  }
+
+  @action
+  async addToDistrictGroup() {
+    if (this.districtBusy) return;
+    this.districtBusy = true;
+    try {
+      const result = await ajax(`/peer-nominations/${this.topic.id}/add-nominee-to-district-group`, { type: "POST" });
+      const key = result.status === "already"
+        ? "peer_nominations.admin_panel.district_already_toast"
+        : "peer_nominations.admin_panel.district_added_toast";
+      this.showToast(key, { interpolate: { group: result.label } });
+    } catch (err) {
+      popupAjaxError(err);
+    } finally {
+      this.districtBusy = false;
+    }
   }
 
   <template>
@@ -137,6 +188,43 @@ export default class PeerNominationAdminPanel extends Component {
           >
             {{i18n "peer_nominations.admin_panel.decline_button"}}
           </button>
+        </div>
+      {{/if}}
+
+      {{#if this.isProperLefty}}
+        <div class="peer-nomination-admin-panel__proper-lefty">
+          <p class="peer-nomination-admin-panel__count">
+            {{i18n "peer_nominations.admin_panel.proper_lefty.grant_count" count=this.properLeftyGrantCount}}
+          </p>
+          <p class="peer-nomination-admin-panel__group-hint">
+            {{i18n "peer_nominations.admin_panel.proper_lefty.group_hint"}}
+          </p>
+          <div class="peer-nomination-admin-panel__actions">
+            <button
+              type="button"
+              class="btn btn-default"
+              disabled={{this.nationalBusy}}
+              {{on "click" this.addToNationalGroup}}
+            >
+              {{#if this.nationalBusy}}
+                {{i18n "peer_nominations.admin_panel.proper_lefty.national_button_busy"}}
+              {{else}}
+                {{i18n "peer_nominations.admin_panel.proper_lefty.national_button"}}
+              {{/if}}
+            </button>
+            <button
+              type="button"
+              class="btn btn-default"
+              disabled={{this.districtBusy}}
+              {{on "click" this.addToDistrictGroup}}
+            >
+              {{#if this.districtBusy}}
+                {{i18n "peer_nominations.admin_panel.proper_lefty.district_button_busy"}}
+              {{else}}
+                {{i18n "peer_nominations.admin_panel.proper_lefty.district_button"}}
+              {{/if}}
+            </button>
+          </div>
         </div>
       {{/if}}
     </div>

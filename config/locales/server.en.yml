@@ -84,46 +84,6 @@ en:
 
           — The Root & Branch admins
 
-      proper_lefty_nominee:
-        title: "You've been verified as a Proper Lefty"
-        raw: |
-          Hi %{nominee_name},
-
-          %{nominator_link} nominated you for the **Proper Lefty** badge, and an admin has approved it. Welcome.
-
-          Here's what %{nominator_link} said about you:
-
-          > %{reason}
-
-          On the back of this you've been added to a couple of organising spaces here on the forum:
-
-          - **%{national_group}** — gives you access to the **National Organising** category, where the national-level organising conversations happen.
-          - **%{district_group}** — your local space for verified socialists in the Green Party in your district.
-
-          Have a look around when you next sign in. Thanks for everything you do.
-
-          — The Root & Branch admins
-
-      proper_lefty_self:
-        title: "You've been verified as a Proper Lefty"
-        raw: |
-          Hi %{nominee_name},
-
-          An admin has reviewed your self-nomination and verified you as a **Proper Lefty**. Welcome.
-
-          The reason you gave:
-
-          > %{reason}
-
-          On the back of this you've been added to a couple of organising spaces here on the forum:
-
-          - **%{national_group}** — gives you access to the **National Organising** category, where the national-level organising conversations happen.
-          - **%{district_group}** — your local space for verified socialists in the Green Party in your district.
-
-          Have a look around when you next sign in. Thanks for everything you do.
-
-          — The Root & Branch admins
-
   site_settings:
     peer_nominations_enabled: "Enable the peer nominations system"
     peer_nominations_category_id: "Category ID where nomination topics are created. Must be restricted to admins/moderators."

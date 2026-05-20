@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 PeerNominations::Engine.routes.draw do
-  get  "/nominatable-badges"           => "nominations#nominatable_badges"
-  post "/"                             => "nominations#create"
-  post "/:topic_id/approve"            => "nominations#approve"
-  post "/:topic_id/decline"            => "nominations#decline"
+  get  "/nominatable-badges"                            => "nominations#nominatable_badges"
+  post "/"                                              => "nominations#create"
+  post "/:topic_id/approve"                             => "nominations#approve"
+  post "/:topic_id/decline"                             => "nominations#decline"
+  post "/:topic_id/add-nominee-to-national-group"       => "nominations#add_nominee_to_national_group"
+  post "/:topic_id/add-nominee-to-district-group"       => "nominations#add_nominee_to_district_group"
 end
 
 Discourse::Application.routes.draw do
