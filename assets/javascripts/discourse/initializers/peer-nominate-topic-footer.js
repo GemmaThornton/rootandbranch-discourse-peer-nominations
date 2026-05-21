@@ -13,6 +13,10 @@ export default {
       api.registerTopicFooterButton({
         id: "peer-nominate-topic-author",
         icon: "certificate",
+        // Forwarded to the rendered <button>'s `class=` attribute; lets the
+        // SCSS rule on `.peer-nominate-btn` style this topic-footer button
+        // the same as the user-profile button.
+        className: "peer-nominate-btn",
         priority: 220,
         displayed() {
           if (!this.currentUser) return false;
