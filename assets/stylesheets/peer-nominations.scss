@@ -1,7 +1,30 @@
 /* Peer Nominations plugin styles */
 
+/* "Nominate for a badge" (other people's profile) and "Suggest a badge
+   for your profile" (own profile) buttons. Same class applied to the
+   user-profile button (rendered by peer-nominate-button.gjs) and the
+   topic-footer button (registered via api.registerTopicFooterButton with
+   className: "peer-nominate-btn") so the prominence styling is shared.
+   Background colour requested by Gemma — light cyan-teal, intentionally
+   distinct from neighbouring btn-default actions so the call to action
+   reads at a glance. */
 .peer-nominate-btn {
   margin-top: 0.5em;
+  background: #CAF5F7;
+  color: var(--primary);
+  border: 1px solid #9adfe1;
+
+  .d-icon {
+    color: var(--primary);
+    margin-right: 0.35em;
+  }
+
+  &:hover,
+  &:focus {
+    background: #b3eef0;
+    color: var(--primary);
+    border-color: #7ec9cd;
+  }
 }
 
 .peer-nominate-modal {
