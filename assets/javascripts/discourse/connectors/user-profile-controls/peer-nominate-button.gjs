@@ -2,6 +2,7 @@ import Component from "@glimmer/component";
 import { action } from "@ember/object";
 import { service } from "@ember/service";
 import { on } from "@ember/modifier";
+import dIcon from "discourse/helpers/d-icon";
 import { i18n } from "discourse-i18n";
 import PeerNominateModal from "../../components/peer-nominate-modal";
 
@@ -52,10 +53,11 @@ export default class PeerNominateButton extends Component {
   <template>
     <button
       type="button"
-      class="btn btn-default peer-nominate-btn"
+      class="btn peer-nominate-btn"
       title={{this.buttonTitle}}
       {{on "click" this.openModal}}
     >
+      {{dIcon "certificate"}}
       {{this.buttonLabel}}
     </button>
   </template>

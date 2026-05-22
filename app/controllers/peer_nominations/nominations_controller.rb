@@ -122,6 +122,12 @@ module PeerNominations
       case
       when result[:ok]
         render json: { status: "added", label: result[:category_name] }
+      when result[:error] == :not_green_party
+        render json: { error: "#{user_obj.username} isn't in the Green Party Members group, so they can't be added to a District Verified Socialists (GP) group." },
+               status: :unprocessable_entity
+      when result[:error] == :not_verified
+        render json: { error: "#{user_obj.username} hasn't been added to the verification group (#{SiteSetting.red_star_verification_group_name}) yet — do that first, then this button will work." },
+               status: :unprocessable_entity
       when result[:error] == :no_district
         render json: { error: "#{user_obj.username} has no postcode or district set — they need to fill that in before they can be added to a district group." },
                status: :unprocessable_entity
