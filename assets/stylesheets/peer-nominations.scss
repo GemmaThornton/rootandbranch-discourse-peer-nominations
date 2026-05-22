@@ -7,23 +7,34 @@
    className: "peer-nominate-btn") so the prominence styling is shared.
    Background colour requested by Gemma — light cyan-teal, intentionally
    distinct from neighbouring btn-default actions so the call to action
-   reads at a glance. */
+   reads at a glance.
+
+   Text + icon colour is a fixed dark value (NOT `var(--primary)`)
+   because the background is fixed across light + dark modes. Using
+   `var(--primary)` flipped the text to off-white under dark mode and
+   left white-on-pale-turquoise — virtually unreadable. */
+$peer-nominate-text: #1a1a1a;
+
 .peer-nominate-btn {
   margin-top: 0.5em;
   background: #CAF5F7;
-  color: var(--primary);
+  color: $peer-nominate-text;
   border: 1px solid #9adfe1;
 
   .d-icon {
-    color: var(--primary);
+    color: $peer-nominate-text;
     margin-right: 0.35em;
   }
 
   &:hover,
   &:focus {
     background: #b3eef0;
-    color: var(--primary);
+    color: $peer-nominate-text;
     border-color: #7ec9cd;
+
+    .d-icon {
+      color: $peer-nominate-text;
+    }
   }
 }
 
