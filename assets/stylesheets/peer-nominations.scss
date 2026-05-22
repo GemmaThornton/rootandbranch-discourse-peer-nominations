@@ -48,6 +48,34 @@
     font-size: 1em;
   }
 
+  /* Renders either the uploaded badge image (image_url) or the
+     FontAwesome icon name (icon) returned by NominatableBadgeSerializer.
+     Sits between the dropdown and the description so the user gets a
+     visual confirmation of which badge they just picked. */
+  .peer-nominate-badge-preview {
+    margin-top: 0.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .peer-nominate-badge-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &--image {
+      max-width: 72px;
+      max-height: 72px;
+      object-fit: contain;
+    }
+
+    &--svg .d-icon {
+      font-size: 3em;
+      color: var(--tertiary);
+    }
+  }
+
   .peer-nominate-badge-description {
     margin-top: 0.5em;
     padding: 0.65em 0.85em;
@@ -55,6 +83,14 @@
     border-left: 3px solid var(--tertiary);
     border-radius: 4px;
     font-size: 0.95em;
+  }
+
+  .peer-nominate-where-known,
+  .peer-nominate-how-long {
+    width: 100%;
+    padding: 0.5em;
+    font-size: 1em;
+    font-family: inherit;
   }
 
   .peer-nominate-reason {

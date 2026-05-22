@@ -5,6 +5,7 @@ import { service } from "@ember/service";
 import { on } from "@ember/modifier";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import dIcon from "discourse/helpers/d-icon";
 import DModal from "discourse/components/d-modal";
 import { i18n } from "discourse-i18n";
 
@@ -15,6 +16,11 @@ export default class PeerNominateModal extends Component {
   @tracked loadingBadges = true;
   @tracked selectedBadgeId = "";
   @tracked reason = "";
+  // Extra context fields the admin reviewers want when judging a
+  // peer nomination — only shown / required for nominating someone
+  // else (self-nominations don't ask "how do you know yourself?").
+  @tracked whereKnownFrom = "";
+  @tracked howLongKnown = "";
   @tracked submitting = false;
   @tracked submitted = false;
 
@@ -65,6 +71,11 @@ export default class PeerNominateModal extends Component {
     return this.badges.find((b) => b.id === id) || null;
   }
 
+  get selectedBadgeHasGraphic() {
+    const b = this.selectedBadge;
+    return !!(b && (b.image_url || b.icon));
+  }
+
   get minReasonLength() {
     return this.siteSettings.peer_nominations_min_reason_length || 50;
   }
@@ -106,6 +117,11 @@ export default class PeerNominateModal extends Component {
     if (!this.selectedBadgeId) return true;
     if (this.reasonTooShort) return true;
     if (this.reasonTooLong) return true;
+    // Context fields are required only when nominating someone else.
+    if (!this.isSelf) {
+      if (this.whereKnownFrom.trim().length === 0) return true;
+      if (this.howLongKnown.trim().length === 0) return true;
+    }
     return false;
   }
 
@@ -131,18 +147,30 @@ export default class PeerNominateModal extends Component {
   }
 
   @action
+  updateWhereKnownFrom(event) {
+    this.whereKnownFrom = event.target.value;
+  }
+
+  @action
+  updateHowLongKnown(event) {
+    this.howLongKnown = event.target.value;
+  }
+
+  @action
   async submit() {
     if (this.submitDisabled) return;
     this.submitting = true;
     try {
-      await ajax("/peer-nominations", {
-        type: "POST",
-        data: {
-          username: this.profileUser.username,
-          badge_id: parseInt(this.selectedBadgeId, 10),
-          reason: this.reason.trim(),
-        },
-      });
+      const data = {
+        username: this.profileUser.username,
+        badge_id: parseInt(this.selectedBadgeId, 10),
+        reason: this.reason.trim(),
+      };
+      if (!this.isSelf) {
+        data.where_known_from = this.whereKnownFrom.trim();
+        data.how_long_known = this.howLongKnown.trim();
+      }
+      await ajax("/peer-nominations", { type: "POST", data });
       this.submitted = true;
     } catch (err) {
       popupAjaxError(err);
@@ -192,13 +220,60 @@ export default class PeerNominateModal extends Component {
               </select>
             {{/if}}
 
-            {{#if this.selectedBadge.description}}
-              <p class="peer-nominate-badge-description">
-                <strong>{{i18n "peer_nominations.modal.badge_description_prefix"}}</strong>
-                {{this.selectedBadge.description}}
-              </p>
+            {{#if this.selectedBadge}}
+              {{#if this.selectedBadgeHasGraphic}}
+                <div class="peer-nominate-badge-preview">
+                  {{#if this.selectedBadge.image_url}}
+                    <img
+                      src={{this.selectedBadge.image_url}}
+                      alt={{this.selectedBadge.name}}
+                      class="peer-nominate-badge-icon peer-nominate-badge-icon--image"
+                    />
+                  {{else}}
+                    <span class="peer-nominate-badge-icon peer-nominate-badge-icon--svg">
+                      {{dIcon this.selectedBadge.icon}}
+                    </span>
+                  {{/if}}
+                </div>
+              {{/if}}
+              {{#if this.selectedBadge.description}}
+                <p class="peer-nominate-badge-description">
+                  <strong>{{i18n "peer_nominations.modal.badge_description_prefix"}}</strong>
+                  {{this.selectedBadge.description}}
+                </p>
+              {{/if}}
             {{/if}}
           </div>
+
+          {{#unless this.isSelf}}
+            <div class="peer-nominate-field">
+              <label for="peer-nominate-where-known">
+                {{i18n "peer_nominations.modal.where_known_label"}}
+              </label>
+              <input
+                id="peer-nominate-where-known"
+                type="text"
+                class="peer-nominate-where-known"
+                placeholder={{i18n "peer_nominations.modal.where_known_placeholder"}}
+                value={{this.whereKnownFrom}}
+                {{on "input" this.updateWhereKnownFrom}}
+              />
+            </div>
+
+            <div class="peer-nominate-field">
+              <label for="peer-nominate-how-long">
+                {{i18n "peer_nominations.modal.how_long_label"}}
+              </label>
+              <input
+                id="peer-nominate-how-long"
+                type="text"
+                class="peer-nominate-how-long"
+                placeholder={{i18n "peer_nominations.modal.how_long_placeholder"}}
+                value={{this.howLongKnown}}
+                {{on "input" this.updateHowLongKnown}}
+              />
+            </div>
+          {{/unless}}
 
           <div class="peer-nominate-field">
             <label for="peer-nominate-reason">
