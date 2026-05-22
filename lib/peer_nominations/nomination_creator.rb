@@ -9,15 +9,27 @@ module PeerNominations
       def success?; success; end
     end
 
-    def self.call(nominator:, nominee:, badge:, reason:)
-      new(nominator: nominator, nominee: nominee, badge: badge, reason: reason).call
+    def self.call(nominator:, nominee:, badge:, reason:, where_known_from: "", how_long_known: "")
+      new(
+        nominator:        nominator,
+        nominee:          nominee,
+        badge:            badge,
+        reason:           reason,
+        where_known_from: where_known_from,
+        how_long_known:   how_long_known
+      ).call
     end
 
-    def initialize(nominator:, nominee:, badge:, reason:)
-      @nominator = nominator
-      @nominee   = nominee
-      @badge     = badge
-      @reason    = reason.to_s.strip
+    def initialize(nominator:, nominee:, badge:, reason:, where_known_from: "", how_long_known: "")
+      @nominator        = nominator
+      @nominee          = nominee
+      @badge            = badge
+      @reason           = reason.to_s.strip
+      # Optional context fields — modal only collects them when nominating
+      # someone else; self-nominations skip them entirely. Default
+      # placeholders below keep the body template tidy if they're blank.
+      @where_known_from = where_known_from.to_s.strip
+      @how_long_known   = how_long_known.to_s.strip
     end
 
     def call
@@ -76,7 +88,12 @@ module PeerNominations
         nominee_link:     profile_link(@nominee),
         badge:            badge_inline_name,
         reason:           @reason.gsub(/\r?\n/, "\n> "),
-        would_be_ordinal: would_be_ordinal
+        would_be_ordinal: would_be_ordinal,
+        # body_self doesn't reference these keys (self-nominations skip
+        # them) — passing them is harmless because I18n's interpolation
+        # only substitutes referenced placeholders.
+        where_known_from: @where_known_from.presence || "—",
+        how_long_known:   @how_long_known.presence   || "—"
       )
 
       creator = PostCreator.new(
