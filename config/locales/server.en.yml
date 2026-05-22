@@ -60,7 +60,7 @@ en:
 
           ---
 
-          If you'd rather not have this badge associated with your profile, there's a Decline button at the top of this message. We hope you'll wear it — peer-awarded badges help the wider community find people with the skills and experience they need and, in time, open up more areas for you to visit on the forum — but the choice is yours.
+          If you'd rather not have this badge associated with your profile, %{decline_link}. We hope you'll wear it — peer-awarded badges help the wider community find people with the skills and experience they need and, in time, open up more areas for you to visit on the forum — but the choice is yours.
 
           Thanks for everything you do.
 
@@ -91,7 +91,7 @@ en:
 
           ---
 
-          If you'd rather not have this badge associated with your profile, there's a Decline button at the top of this message. We hope you'll wear it — peer-awarded badges help the wider community find people with the skills and experience they need and, in time, open up more areas for you to visit on the forum — but the choice is yours.
+          If you'd rather not have this badge associated with your profile, %{decline_link}. We hope you'll wear it — peer-awarded badges help the wider community find people with the skills and experience they need and, in time, open up more areas for you to visit on the forum — but the choice is yours.
 
           Thanks for everything you do.
 
