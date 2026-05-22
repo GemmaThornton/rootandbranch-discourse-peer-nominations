@@ -22,6 +22,10 @@ en:
 
         If awarded, this will be the **%{would_be_ordinal}** %{badge} badge that %{nominee_link} has collected.
 
+        **Where %{nominator} knows %{nominee} from:** %{where_known_from}
+
+        **How long they've known each other:** %{how_long_known}
+
         %{nominator}'s reason:
 
         > %{reason}
@@ -57,6 +61,8 @@ en:
           > %{reason}
 
           Your new badge will appear on your profile shortly.
+
+          Consider reciprocating by nominating them for badges too (if you know this person well).
 
           ---
 

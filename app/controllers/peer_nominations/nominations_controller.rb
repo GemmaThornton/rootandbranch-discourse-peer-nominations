@@ -39,10 +39,12 @@ module PeerNominations
       raise Discourse::NotFound unless badge
 
       result = NominationCreator.call(
-        nominator: current_user,
-        nominee:   nominee,
-        badge:     badge,
-        reason:    params[:reason].to_s
+        nominator:        current_user,
+        nominee:          nominee,
+        badge:            badge,
+        reason:           params[:reason].to_s,
+        where_known_from: params[:where_known_from].to_s,
+        how_long_known:   params[:how_long_known].to_s
       )
 
       if result.success?
