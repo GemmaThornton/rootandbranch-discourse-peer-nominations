@@ -215,22 +215,27 @@ module PeerNominations
       pm_topic.save_custom_fields(true)
     end
 
+    # The %{decline_link} placeholder in the nominee/self PM bodies gets
+    # populated with a markdown link AFTER the PM is created — we need
+    # the PM topic's own URL to build the link, and that URL only exists
+    # after PostCreator.create! returns. Using this sentinel during the
+    # initial create then swapping it in via update_columns avoids both
+    # a) regenerating the entire raw twice and b) a Post.revise-style
+    # "edited" marker on the brand-new system message.
+    DECLINE_LINK_PLACEHOLDER = "__PEER_NOM_DECLINE_LINK__"
+
     def send_pms!
       if nominator.id == nominee.id
         # Self-nomination: one combined PM, not two near-identical ones.
         self_post = PostCreator.create!(
           Discourse.system_user,
           title: I18n.t("peer_nominations.pm.self.title", badge: badge_inline_name),
-          raw: I18n.t(
-            "peer_nominations.pm.self.raw",
-            nominee_name: display_name(nominee),
-            badge:        badge_inline_name,
-            reason:       reason_text
-          ),
+          raw: self_pm_raw(DECLINE_LINK_PLACEHOLDER),
           archetype:    Archetype.private_message,
           target_usernames: nominee.username,
           skip_validations: true
         )
+        finalize_decline_link!(self_post) { |link| self_pm_raw(link) }
         mark_pm_offers_decline!(self_post)
         return
       end
@@ -238,18 +243,12 @@ module PeerNominations
       nominee_post = PostCreator.create!(
         Discourse.system_user,
         title: I18n.t("peer_nominations.pm.nominee.title", badge: badge_inline_name),
-        raw: I18n.t(
-          "peer_nominations.pm.nominee.raw",
-          nominee_name:   display_name(nominee),
-          nominator_name: display_name(nominator),
-          nominator_link: profile_link(nominator),
-          badge:          badge_inline_name,
-          reason:         reason_text
-        ),
+        raw: nominee_pm_raw(DECLINE_LINK_PLACEHOLDER),
         archetype:    Archetype.private_message,
         target_usernames: nominee.username,
         skip_validations: true
       )
+      finalize_decline_link!(nominee_post) { |link| nominee_pm_raw(link) }
       mark_pm_offers_decline!(nominee_post)
 
       PostCreator.create!(
@@ -266,6 +265,46 @@ module PeerNominations
         target_usernames: nominator.username,
         skip_validations: true
       )
+    end
+
+    # Render the nominee approval PM body. Takes the decline link as a
+    # parameter so we can pass a placeholder string at PostCreator time
+    # then the real markdown link after the PM topic id is known.
+    def nominee_pm_raw(decline_link)
+      I18n.t(
+        "peer_nominations.pm.nominee.raw",
+        nominee_name:   display_name(nominee),
+        nominator_name: display_name(nominator),
+        nominator_link: profile_link(nominator),
+        badge:          badge_inline_name,
+        reason:         reason_text,
+        decline_link:   decline_link
+      )
+    end
+
+    # Same shape as nominee_pm_raw, for self-nominations.
+    def self_pm_raw(decline_link)
+      I18n.t(
+        "peer_nominations.pm.self.raw",
+        nominee_name: display_name(nominee),
+        badge:        badge_inline_name,
+        reason:       reason_text,
+        decline_link: decline_link
+      )
+    end
+
+    # Rebuild the PM's raw+cooked once the topic id (and hence URL) is
+    # known. Uses update_columns to skip the Post#save callbacks that
+    # would otherwise log an "edited" revision on a freshly-created
+    # system message. The PM-notification email job runs later via
+    # Sidekiq and reads the post fresh, so the email body picks up the
+    # finalised link automatically.
+    def finalize_decline_link!(post)
+      pm_url = post.topic.url
+      link_md = "[click here to decline this badge](#{pm_url})"
+      final_raw = yield(link_md)
+      cooked = PrettyText.cook(final_raw)
+      post.update_columns(raw: final_raw, cooked: cooked)
     end
 
     def fail(key, **args)
