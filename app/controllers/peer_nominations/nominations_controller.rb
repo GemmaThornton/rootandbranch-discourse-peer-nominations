@@ -5,6 +5,7 @@ module PeerNominations
     before_action :ensure_logged_in
     before_action :ensure_enabled
     before_action :ensure_staff_for_group_actions, only: [:add_nominee_to_national_group, :add_nominee_to_district_group]
+    before_action :ensure_admin, only: [:admin_received_for_user]
 
     # GET /peer-nominations/nominatable-badges
     # Returns the nominatable badges (from the hardcoded list in plugin.rb),
@@ -178,7 +179,36 @@ module PeerNominations
       end
     end
 
+    # GET /peer-nominations/admin/users/:user_id/received
+    # Returns the list of approved peer-nomination grants RECEIVED by the
+    # given user (i.e. they were the nominee). Admin-only — powers the
+    # "Peer nominations received" panel on user profiles so admins can
+    # retrieve the full nomination context (nominator, badge, reason,
+    # link back to the original — possibly archived — topic) after
+    # approval.
+    def admin_received_for_user
+      user = User.find_by(id: params[:user_id].to_i)
+      raise Discourse::NotFound unless user
+
+      grants = PeerNominationGrant
+        .where(nominee_id: user.id)
+        .includes(:nominator, :badge, :topic)
+        .order(granted_at: :desc)
+
+      render json: {
+        grants: ActiveModel::ArraySerializer.new(
+          grants,
+          each_serializer: AdminGrantSerializer,
+          root: false
+        ).as_json
+      }
+    end
+
     private
+
+    def ensure_admin
+      raise Discourse::InvalidAccess unless current_user&.admin?
+    end
 
     def locate_topic
       topic = Topic.find_by(id: params[:topic_id].to_i)

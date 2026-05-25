@@ -216,3 +216,122 @@ $peer-nominate-text: #1a1a1a;
     margin-top: 0.75em;
   }
 }
+
+/* Admin-only "Peer nominations received" panel rendered into the
+   user-profile-secondary outlet. Visible only when the viewing user is
+   an admin AND the profiled user has at least one approved peer
+   nomination on record. */
+.peer-nominations-history {
+  margin-top: 1.5em;
+  padding: 1em 1.25em;
+  border: 1px solid var(--primary-low);
+  border-radius: var(--d-border-radius);
+  background: var(--tertiary-very-low, var(--secondary));
+
+  &__title {
+    margin: 0 0 0.75em 0;
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  &__admin-tag {
+    font-size: 0.7em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tertiary);
+    background: var(--tertiary-low);
+    padding: 0.15em 0.5em;
+    border-radius: var(--d-border-radius);
+  }
+
+  &__error {
+    color: var(--danger);
+    margin: 0;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__item {
+    padding: 0.75em 0;
+    border-bottom: 1px solid var(--primary-low);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em 1em;
+    font-size: 0.95em;
+  }
+
+  &__nominator-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    text-decoration: none;
+  }
+
+  &__nominator-name {
+    font-weight: 600;
+  }
+
+  &__badge strong {
+    font-weight: 700;
+  }
+
+  &__date {
+    margin-left: auto;
+    color: var(--primary-medium);
+    font-size: 0.9em;
+  }
+
+  &__toggle {
+    margin-top: 0.25em;
+    padding: 0;
+    font-size: 0.85em;
+    color: var(--tertiary);
+    background: none;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__detail {
+    margin-top: 0.5em;
+    padding: 0.5em 0.75em;
+    background: var(--secondary);
+    border-left: 3px solid var(--tertiary);
+    border-radius: 0 var(--d-border-radius) var(--d-border-radius) 0;
+  }
+
+  &__reason {
+    margin: 0;
+    padding: 0;
+    font-style: italic;
+    white-space: pre-wrap;
+  }
+
+  &__topic-link {
+    margin: 0.5em 0 0 0;
+    font-size: 0.9em;
+  }
+
+  &__topic-status {
+    color: var(--primary-medium);
+    margin-left: 0.25em;
+  }
+}
