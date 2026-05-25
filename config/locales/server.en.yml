@@ -60,7 +60,7 @@ en:
 
           > %{reason}
 
-          Your new badge will appear on your profile shortly.
+          Your new badge will appear on your profile shortly, but the comments will not be published.
 
           Consider reciprocating by nominating them for badges too (if you know this person well).
 
@@ -76,7 +76,7 @@ en:
         raw: |
           Hi %{nominator_name},
 
-          Good news — an admin has approved your nomination of %{nominee_link} for the **%{badge}** badge. The badge is now showing on their profile.
+          Good news — an admin has approved your nomination of %{nominee_link} for the **%{badge}** badge. The badge is now showing on their profile, but your comments are not published.
 
           Thanks for taking the time to recognise a comrade.
 

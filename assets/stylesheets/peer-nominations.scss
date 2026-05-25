@@ -216,3 +216,107 @@ $peer-nominate-text: #1a1a1a;
     margin-top: 0.75em;
   }
 }
+
+/* Admin user details page: row that mimics the "Edit Badges"
+   display-row layout, with a button that opens the peer-nominations
+   history modal. Rendered via the admin-user-details outlet so it
+   appears immediately below the user's main details block. */
+.peer-nominations-admin-row {
+  /* .display-row supplies the field/value/controls grid — we only
+     adjust spacing so the row sits cleanly under the details
+     section instead of floating away from it. */
+  margin-top: 0;
+}
+
+/* Modal body: list of peer nominations received. Hosted inside a
+   DModal opened from the admin user details page. */
+.peer-nominations-history-modal {
+  .peer-nominations-history__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .peer-nominations-history__empty {
+    margin: 0;
+    color: var(--primary-medium);
+    font-style: italic;
+  }
+
+  .peer-nominations-history__item {
+    padding: 0.75em 0;
+    border-bottom: 1px solid var(--primary-low);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  .peer-nominations-history__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em 1em;
+    font-size: 0.95em;
+  }
+
+  .peer-nominations-history__nominator-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    text-decoration: none;
+  }
+
+  .peer-nominations-history__nominator-name {
+    font-weight: 600;
+  }
+
+  .peer-nominations-history__badge strong {
+    font-weight: 700;
+  }
+
+  .peer-nominations-history__date {
+    margin-left: auto;
+    color: var(--primary-medium);
+    font-size: 0.9em;
+  }
+
+  .peer-nominations-history__toggle {
+    margin-top: 0.25em;
+    padding: 0;
+    font-size: 0.85em;
+    color: var(--tertiary);
+    background: none;
+    border: 0;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .peer-nominations-history__detail {
+    margin-top: 0.5em;
+    padding: 0.5em 0.75em;
+    background: var(--primary-very-low, var(--secondary));
+    border-left: 3px solid var(--tertiary);
+    border-radius: 0 var(--d-border-radius) var(--d-border-radius) 0;
+  }
+
+  .peer-nominations-history__reason {
+    margin: 0;
+    padding: 0;
+    font-style: italic;
+    white-space: pre-wrap;
+  }
+
+  .peer-nominations-history__topic-link {
+    margin: 0.5em 0 0 0;
+    font-size: 0.9em;
+  }
+
+  .peer-nominations-history__topic-status {
+    color: var(--primary-medium);
+    margin-left: 0.25em;
+  }
+}
