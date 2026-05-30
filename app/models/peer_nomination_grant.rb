@@ -14,4 +14,11 @@ class PeerNominationGrant < ActiveRecord::Base
   validates :reason,       presence: true
   validates :granted_at,   presence: true
   validates :nominator_id, uniqueness: { scope: %i[nominee_id badge_id] }
+
+  # Per-nominee visibility scope, set when the nominee acts on the
+  # approval PM. Default 'public' (badge visible to everyone, the
+  # original behaviour). Other values narrow who can see the badge —
+  # see PeerNominations::BadgeVisibility for the filter logic.
+  VISIBILITY_SCOPES = %w[public vs_only admin_only].freeze
+  validates :visibility_scope, inclusion: { in: VISIBILITY_SCOPES }
 end

@@ -37,6 +37,16 @@ module PeerNominations
       new(topic: topic, admin: Discourse.system_user).decline_as_nominee(nominee)
     end
 
+    # Nominee-initiated narrow-acceptance — keeps the grant + badge in
+    # place but stamps visibility_scope on the grant so the badge is
+    # hidden from viewers outside the chosen audience. Used when the
+    # nominee taps "Accept (VS only)" or "Accept (admin only)" on the
+    # approval PM.
+    def self.accept_as_nominee_with_scope(topic:, nominee:, scope:)
+      new(topic: topic, admin: Discourse.system_user)
+        .accept_as_nominee_with_scope(nominee, scope)
+    end
+
     def initialize(topic:, admin:, decline_reason: nil)
       @topic = topic
       @admin = admin
@@ -136,6 +146,28 @@ module PeerNominations
         @topic.update_status("closed", true, Discourse.system_user)
       end
 
+      Result.new(success: true)
+    end
+
+    # Narrow-acceptance: nominee chooses a visibility scope (vs_only /
+    # admin_only) rather than declining. Updates the grant in place.
+    # Public is the default and doesn't go through this path — silence
+    # is implicit-accept-as-public.
+    def accept_as_nominee_with_scope(declining_user, scope)
+      return fail(:topic_not_a_nomination) unless nominator && nominee && badge
+      return fail(:not_admin) unless declining_user&.id == nominee.id
+      unless PeerNominationGrant::VISIBILITY_SCOPES.include?(scope.to_s) &&
+             scope.to_s != "public"
+        return fail(:invalid_visibility_scope)
+      end
+
+      current_state = @topic.custom_fields[PeerNominations::TOPIC_STATE].to_s
+      return fail(:already_resolved) unless current_state == "approved"
+
+      grant = PeerNominationGrant.find_by(topic_id: @topic.id)
+      return fail(:grant_missing) unless grant
+
+      grant.update!(visibility_scope: scope.to_s)
       Result.new(success: true)
     end
 

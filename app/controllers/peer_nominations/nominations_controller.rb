@@ -161,6 +161,26 @@ module PeerNominations
       end
     end
 
+    # POST /peer-nominations/:topic_id/accept-as-nominee-with-scope
+    # body: { scope: "vs_only" | "admin_only" }
+    # Nominee-initiated narrow-acceptance. Keeps the badge in place but
+    # records a visibility_scope on the grant so the badge is hidden
+    # from viewers outside the chosen audience.
+    def accept_as_nominee_with_scope
+      topic = locate_topic
+      scope = params[:scope].to_s
+      result = ApprovalHandler.accept_as_nominee_with_scope(
+        topic: topic, nominee: current_user, scope: scope
+      )
+
+      if result.success?
+        render json: success_json
+      else
+        render json: { error: I18n.t("peer_nominations.errors.#{result.error_key}") },
+               status: error_status_for(result.error_key)
+      end
+    end
+
     # POST /peer-nominations/:topic_id/decline
     # body: { decline_reason: "..." }
     def decline

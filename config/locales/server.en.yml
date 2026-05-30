@@ -14,6 +14,8 @@ en:
       already_resolved: "This nomination has already been approved or declined."
       grant_failed: "The badge could not be granted. Please check the badge configuration and try again."
       decline_reason_too_long: "Please keep the decline note under 500 characters."
+      invalid_visibility_scope: "That visibility option isn't recognised."
+      grant_missing: "The badge grant for this nomination has gone missing — please contact an admin."
 
     topic:
       title: "%{nominator} nominates %{nominee} for %{badge}"
