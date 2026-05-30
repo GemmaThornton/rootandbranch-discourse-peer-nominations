@@ -69,6 +69,7 @@ after_initialize do
   load File.expand_path("../app/serializers/peer_nominations/nominatable_badge_serializer.rb", __FILE__)
   load File.expand_path("../lib/peer_nominations/nomination_creator.rb", __FILE__)
   load File.expand_path("../lib/peer_nominations/approval_handler.rb", __FILE__)
+  load File.expand_path("../lib/peer_nominations/badge_visibility.rb", __FILE__)
 
   # NOTE: Badge in current Discourse (8.x) does NOT expose .custom_fields
   # the way Topic / Post / Category / User do — both register_custom_field_type
@@ -156,4 +157,44 @@ after_initialize do
   add_to_serializer(:topic_view, :include_peer_nom_decline_for_topic_id?) do
     object.topic.custom_fields[PeerNominations::PM_DECLINE_FOR_TOPIC].present?
   end
+
+  # Badge visibility filtering.
+  #
+  # Discourse surfaces a user's badges in two main places:
+  #
+  #   1. featured_user_badges on the user serializer (used by the user
+  #      profile page and the user card popup) — a small set of up to N
+  #      top badges.
+  #   2. UserBadgesController#username — the full /u/<username>/badges
+  #      listing, serialized via UserBadgesSerializer.
+  #
+  # Both are overridden below to filter out user_badges whose
+  # corresponding PeerNominationGrant has a restrictive visibility_scope
+  # that the viewer isn't entitled to see.
+  #
+  # The nominee themselves always sees their own badge regardless of
+  # scope; admins/moderators always see all badges (the filter passes
+  # them through). See PeerNominations::BadgeVisibility.filter.
+  add_to_serializer(:user, :featured_user_badges) do
+    raw = object.featured_user_badges(SiteSetting.max_favorite_badges)
+    PeerNominations::BadgeVisibility.filter(raw.to_a, scope&.user).map do |ub|
+      BasicUserBadgeSerializer.new(ub, scope: scope, root: false).as_json
+    end
+  end
+
+  add_to_serializer(:user_card, :featured_user_badges) do
+    raw = object.featured_user_badges(SiteSetting.max_favorite_badges)
+    PeerNominations::BadgeVisibility.filter(raw.to_a, scope&.user).map do |ub|
+      BasicUserBadgeSerializer.new(ub, scope: scope, root: false).as_json
+    end
+  end
+
+  # KNOWN LIMITATION: the dedicated /u/<username>/badges full listing
+  # page is NOT filtered yet. The featured_user_badges override above
+  # covers the user profile main page + user card popup — i.e. all the
+  # surfaces where a badge appears AS PART OF the user's profile. A
+  # restricted-scope badge will still appear if a viewer navigates
+  # directly to the user's /badges sub-page. Fixing that properly
+  # needs a serializer-level filter (BasicUserBadgeSerializer can't
+  # drop records from its array). Iterate in a follow-up.
 end
